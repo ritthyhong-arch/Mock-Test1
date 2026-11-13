@@ -749,7 +749,7 @@
                                         <p class="text-[16px] mt-1 school-name-display">សាលាបឋមសិក្សាអនុវត្តរាជធានី</p>
                                     </div>
                                     <div class="text-center mt-2">
-                                        <p class="text-[16px] exam-title-display">ប្រឡងជ្រើសរើសសិស្សពូកែ</p>
+                                        <p class="text-[16px] exam-title-display">ប្រឡងសាកល្បងលើកទី១</p>
                                         <p class="text-[16px] mt-1">សម័យប្រឡង៖ <span id="seatingKhmerSolarDate">........................................</span></p>
                                         <p class="text-[16px] mt-1">មណ្ឌលប្រឡង៖ <span class="exam-center-display">សាលាបឋមសិក្សាអនុវត្តរាជធានី ភ្នំពេញ</span></p>
                                     </div>
@@ -1205,15 +1205,16 @@
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fas fa-link text-indigo-500"></i> អាសយដ្ឋានគេហទំព័រ Online (Base URL)
+                            <i class="fas fa-link text-indigo-500"></i> អាសយដ្ឋាន Link Online នៃប្រឡងសាកល្បងលើកទី១ (Base URL)
                         </label>
-                        <button type="button" onclick="toggleEditBaseUrl()" id="toggleBaseUrlBtn" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
-                            <i class="fas fa-pen text-[10px]"></i> កែប្រែ
-                        </button>
+                        <span class="text-[11px] text-indigo-600 font-medium">អាចកែប្រែ Link បាន</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="url" id="onlineModalBaseUrlInput" readonly class="flex-1 px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-lg text-xs font-mono text-gray-700 focus:outline-none transition" onchange="onBaseUrlChanged(this.value)">
+                        <input type="url" id="onlineModalBaseUrlInput" class="flex-1 px-3.5 py-2 bg-white border border-gray-300 rounded-lg text-xs font-mono text-gray-800 focus:ring-2 focus:ring-indigo-500 focus:outline-none transition" placeholder="https://ritthyhong-arch.github.io/Mock-Test1/" oninput="onBaseUrlChanged(this.value)">
                     </div>
+                    <p class="text-[11px] text-gray-500 mt-1">
+                        💡 សូមបញ្ចូល Link គេហទំព័រដែលអ្នកបានបង្ហោះ (Host) សម្រាប់ <strong>«ប្រឡងសាកល្បងលើកទី១»</strong> (កុំប្រើ Link នៃប្រឡងសិស្សពូកែចាស់)។
+                    </p>
                 </div>
 
                 <!-- Select Room -->
@@ -5247,26 +5248,7 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                 }
                 return window.location.origin + path;
             }
-            return 'https://ritthyhong-arch.github.io/Examination-Preparation-/';
-        }
-
-        function toggleEditBaseUrl() {
-            const input = document.getElementById('onlineModalBaseUrlInput');
-            const btn = document.getElementById('toggleBaseUrlBtn');
-            if (!input) return;
-            if (input.hasAttribute('readonly')) {
-                input.removeAttribute('readonly');
-                input.classList.remove('bg-gray-50');
-                input.classList.add('bg-white', 'ring-2', 'ring-indigo-400');
-                input.focus();
-                if (btn) btn.innerHTML = '<i class="fas fa-check text-[10px]"></i> រួចរាល់';
-            } else {
-                input.setAttribute('readonly', 'true');
-                input.classList.remove('bg-white', 'ring-2', 'ring-indigo-400');
-                input.classList.add('bg-gray-50');
-                onBaseUrlChanged(input.value);
-                if (btn) btn.innerHTML = '<i class="fas fa-pen text-[10px]"></i> កែប្រែ';
-            }
+            return 'https://ritthyhong-arch.github.io/Mock-Test1/';
         }
 
         function onBaseUrlChanged(val) {
@@ -5274,8 +5256,7 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
             let clean = val.trim();
             if (!clean.endsWith('/')) clean += '/';
             localStorage.setItem('online_system_base_url', clean);
-            updateOnlineModalLinks();
-            showToast('បានរក្សាទុកអាសយដ្ឋាន Online Base URL ថ្មី!', 'success');
+            updateOnlineModalLinks(false);
         }
 
         function openOnlineScoreLinksModal() {
@@ -5310,7 +5291,7 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                 }
             }
 
-            updateOnlineModalLinks();
+            updateOnlineModalLinks(true);
             modal.classList.remove('hidden');
         }
 
@@ -5319,10 +5300,12 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
             if (modal) modal.classList.add('hidden');
         }
 
-        function updateOnlineModalLinks() {
+        function updateOnlineModalLinks(updateInput = true) {
             const base = getOnlineBaseUrl();
-            const baseInput = document.getElementById('onlineModalBaseUrlInput');
-            if (baseInput && baseInput.hasAttribute('readonly')) baseInput.value = base;
+            if (updateInput) {
+                const baseInput = document.getElementById('onlineModalBaseUrlInput');
+                if (baseInput) baseInput.value = base;
+            }
 
             const room = document.getElementById('onlineModalRoomSelect')?.value || 'all';
             const finalUrl = `${base}?role=user&room=${encodeURIComponent(room)}`;
