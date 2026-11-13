@@ -8,9 +8,12 @@ echo   Pushing Examination System to GitHub Pages
 echo   Repository: https://github.com/ritthyhong-arch/Examination-Preparation-.git
 echo ========================================================
 echo.
+git config user.name "ritthyhong-arch"
+git config user.email "ritthyhong-arch@users.noreply.github.com"
 git add .
-git commit -m "Update Examination Management System Online"
+git commit -m "Update Examination Management System Online" > nul 2>&1
 git branch -M main
+echo កំពុង Push ឡើងទៅកាន់ GitHub...
 git push -u origin main
 echo.
 if %errorlevel% equ 0 (
@@ -24,7 +27,7 @@ if %errorlevel% equ 0 (
 ) else (
     echo ========================================================
     echo   [ចំណាំ / NOTICE]
-    echo   ប្រសិនបើ Git Push ទាមទារ Login សូមបំពេញ Credentials របស់អ្នក។
+    echo   ប្រសិនបើ Git Push ទាមទារ Login សូមបំពេញ Credentials/Token របស់អ្នក។
     echo ========================================================
 )
 echo.

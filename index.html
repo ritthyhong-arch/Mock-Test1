@@ -831,7 +831,7 @@
                                     <button class="bg-blue-100 hover:bg-blue-200 text-black font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="showTop3State()"><i class="fas fa-medal mr-1"></i> លទ្ធផល</button>
                                     <button class="bg-green-100 hover:bg-green-200 text-green-800 border border-green-300 font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="exportScoreToExcel()"><i class="fas fa-file-excel mr-1"></i> Excel</button>
                                     <button class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="printScoreSheet()"><i class="fas fa-print mr-1"></i> Print</button>
-                                    <button class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-medium px-3.5 py-2 rounded-lg transition shadow-sm text-sm flex items-center" onclick="copyUserScoreLink()" title="ចម្លងតំណភ្ជាប់ (Link) សម្រាប់ User បញ្ចូលពិន្ទុ"><i class="fas fa-link mr-1.5 text-indigo-500"></i> ចម្លង Link</button>
+                                    <button class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-medium px-3.5 py-2 rounded-lg transition shadow-sm text-sm flex items-center" onclick="openOnlineScoreLinksModal()" title="តំណភ្ជាប់ Online សម្រាប់ចែកជូនលោកគ្រូ-អ្នកគ្រូវាយបញ្ចូលពិន្ទុ"><i class="fas fa-globe mr-1.5 text-indigo-500"></i> តំណភ្ជាប់ Online</button>
                                 </div>
                             </div>
 
@@ -1176,6 +1176,99 @@
                     </div>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Online Score Entry Links Modal -->
+    <div id="onlineScoreLinksModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center hidden no-print backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-indigo-700 via-blue-700 to-indigo-800 px-6 py-4 flex items-center justify-between text-white shadow-sm">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <i class="fas fa-globe text-indigo-200"></i> តំណភ្ជាប់ Online សម្រាប់បញ្ចូលពិន្ទុ
+                </h3>
+                <button type="button" onclick="closeOnlineScoreLinksModal()" class="text-indigo-100 hover:text-white transition w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/20">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4 text-left">
+                <!-- Status Banner -->
+                <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3 text-xs text-blue-900 leading-relaxed">
+                    <i class="fas fa-info-circle text-blue-600 text-base mt-0.5"></i>
+                    <div>
+                        <strong>ប្រព័ន្ធ Online រួចរាល់៖</strong> លោកគ្រូ-អ្នកគ្រូអាចបើក Link នេះលើទូរស័ព្ទដៃ ឬកុំព្យូទ័រ ដើម្បីវាយបញ្ចូលពិន្ទុពីចម្ងាយបាន។ រាល់ពិន្ទុដែលវាយបញ្ចូល នឹង Sync មកអេក្រង់ Admin ភ្លាមៗ (Realtime) តាម Supabase Cloud!
+                    </div>
+                </div>
+
+                <!-- Base URL Setting -->
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-xs font-bold text-gray-700 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fas fa-link text-indigo-500"></i> អាសយដ្ឋានគេហទំព័រ Online (Base URL)
+                        </label>
+                        <button type="button" onclick="toggleEditBaseUrl()" id="toggleBaseUrlBtn" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium">
+                            <i class="fas fa-pen text-[10px]"></i> កែប្រែ
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="url" id="onlineModalBaseUrlInput" readonly class="flex-1 px-3.5 py-2 bg-gray-50 border border-gray-300 rounded-lg text-xs font-mono text-gray-700 focus:outline-none transition" onchange="onBaseUrlChanged(this.value)">
+                    </div>
+                </div>
+
+                <!-- Select Room -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <i class="fas fa-door-closed text-indigo-500"></i> ជ្រើសរើសបន្ទប់ដែលចង់ចែកជូន
+                    </label>
+                    <select id="onlineModalRoomSelect" onchange="updateOnlineModalLinks()" class="w-full px-3.5 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm font-medium transition cursor-pointer">
+                        <option value="all">បន្ទប់ទាំងអស់ (All Rooms)</option>
+                    </select>
+                </div>
+
+                <!-- Generated Link Display & 1-Click Actions -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                        <i class="fas fa-share-alt text-indigo-500"></i> តំណភ្ជាប់ជាក់លាក់ (Link សម្រាប់បន្ទប់ដែលបានជ្រើស)
+                    </label>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <input type="text" id="onlineModalGeneratedUrl" readonly onclick="this.select()" class="flex-1 px-3.5 py-2 bg-indigo-50/50 border border-indigo-200 rounded-lg text-xs font-mono text-indigo-900 focus:outline-none select-all cursor-pointer font-bold">
+                        <div class="flex gap-2">
+                            <button type="button" onclick="copyCurrentOnlineRoomLink()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition shadow-sm flex items-center justify-center gap-1.5 whitespace-nowrap">
+                                <i class="fas fa-copy"></i> ចម្លង Link
+                            </button>
+                            <button type="button" onclick="testOpenOnlineLink()" class="px-3.5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-medium transition border border-gray-300 flex items-center justify-center gap-1.5 whitespace-nowrap" title="បើកតេស្តលើ Tab ថ្មី">
+                                <i class="fas fa-external-link-alt text-gray-600"></i> បើកតេស្ត
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Telegram Broadcast Button -->
+                <div class="pt-2 border-t border-gray-100">
+                    <button type="button" onclick="copyAllRoomsTelegramText()" class="w-full py-2.5 px-4 bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-xs">
+                        <i class="fab fa-telegram-plane text-sky-600 text-base"></i>
+                        <span>ចម្លង Link គ្រប់បន្ទប់ទាំងអស់ (សម្រាប់ផ្ញើក្នុង Telegram Group តែម្តង)</span>
+                    </button>
+                </div>
+
+                <!-- GitHub Push Helper -->
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 leading-relaxed">
+                    <div class="flex items-center gap-1.5 font-bold mb-1">
+                        <i class="fas fa-cloud-upload-alt text-amber-600"></i> របៀប Update កូដទៅកាន់ GitHub Pages៖
+                    </div>
+                    <div>
+                        ប្រសិនបើអ្នកបានកែប្រែកូដថ្មី សូមចុច Double-Click លើ file <strong>Push_to_GitHub.bat</strong> នៅក្នុង Folder <code>examination-system</code> ជាការស្រេច!
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end pt-2 border-t border-gray-100">
+                    <button type="button" onclick="closeOnlineScoreLinksModal()" class="px-5 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-xs font-bold transition">
+                        បិទ (Close)
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2598,6 +2691,9 @@
     'schoolExamCandidates': [{"seat": "001", "name": "ជឿន សិទ្ធិបញ្ញារ័ត្ន", "gender": "F", "grade": "៧", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "002", "name": "តាំង ក្វាន់យូ", "gender": "M", "grade": "៧", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "003", "name": "តាំង ឈីវហ្គេក", "gender": "F", "grade": "៧", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "004", "name": "តាន់ អារីយ៉ា​ជេស៊ី", "gender": "F", "grade": "៧", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "005", "name": "ផាត សុវណ្ណរាជ្យ", "gender": "F", "grade": "៧", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "006", "name": "លី សូរ្យាភស្ស", "gender": "F", "grade": "៧", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "007", "name": "លឹម ហ្វាតា", "gender": "F", "grade": "៧", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "008", "name": "វុត្ថា វិសាលសក្ដិ", "gender": "M", "grade": "៧", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "009", "name": "សាន សុខវត្តី", "gender": "F", "grade": "៧", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "010", "name": "សារុំវឌ្ឍ វណ្ណអារីយ៉ា", "gender": "F", "grade": "៧", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "011", "name": "សុវណ្ណរ៉ា មល្លិកា", "gender": "F", "grade": "៧", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "012", "name": "សេង សិរីឬទ្ធី", "gender": "M", "grade": "៧", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "013", "name": "ហ៊ីវ ណៃយិន", "gender": "F", "grade": "៧", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "014", "name": "ឡុង ស៊ីវម៉ី", "gender": "F", "grade": "៧", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "015", "name": "អាំ ទួនគន់វឌ្ឍនៈវិភូ", "gender": "M", "grade": "៧", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "១"}, {"seat": "016", "name": "ចែត កុសុមា", "gender": "F", "grade": "៧", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "017", "name": "ឆាង ចន្ទមុនិនាថ", "gender": "F", "grade": "៧", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "018", "name": "ឌឹម សាវ៉នរតនៈបញ្ញា", "gender": "F", "grade": "៧", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "019", "name": "តាំង សុភ័ក្រ្ត", "gender": "F", "grade": "៧", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "020", "name": "ថុនា ដាបញ្ញាបុត្រ", "gender": "M", "grade": "៧", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "021", "name": "ធី ឧត្តម", "gender": "M", "grade": "៧", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "022", "name": "ផាត់យ៉ន សុខាឧត្តម", "gender": "M", "grade": "៧", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "023", "name": "រង្សី វត្តី", "gender": "F", "grade": "៧", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "024", "name": "រិទ្ធិ ម៉ានរិន្ទ", "gender": "M", "grade": "៧", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "025", "name": "រុងរតនៈ ភិមាន", "gender": "F", "grade": "៧", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "១"}, {"seat": "026", "name": "វណ្ណ វរឫទ្ធិ", "gender": "F", "grade": "៧", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "027", "name": "ហ៊ង ម៉េងស៊ាង", "gender": "M", "grade": "៧", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "028", "name": "ហាក់ សុវណ្ណារិទ្ធិ", "gender": "M", "grade": "៧", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "029", "name": "អាន វិចិត្រ រិទ្ធីយស", "gender": "M", "grade": "៧", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "030", "name": "អ៊ឹង គីមហ័ង", "gender": "F", "grade": "៧", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "031", "name": "កាំង ភិចហ័ង", "gender": "F", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "032", "name": "ខៀវ សូនិតា", "gender": "F", "grade": "៨", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "033", "name": "ណា លីទៀង", "gender": "F", "grade": "៨", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "034", "name": "ប៊ុន ផុនលីនដា", "gender": "F", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "035", "name": "ផន រតនៈវិមាន", "gender": "F", "grade": "៨", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "036", "name": "ផុងថៃ វិជិតា", "gender": "F", "grade": "៨", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "037", "name": "ពៅ សុខលី", "gender": "F", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "038", "name": "យឹម សុខសាណា", "gender": "F", "grade": "៨", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "039", "name": "លាង សុនីតា", "gender": "F", "grade": "៨", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "040", "name": "សយ សីហៈ", "gender": "M", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "041", "name": "ស៊ា សុជាតា", "gender": "F", "grade": "៨", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "042", "name": "សេង មួយ​ស៊ីង", "gender": "F", "grade": "៨", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "043", "name": "ហ៊ុន ម៉ូរ៉ាណាអ៊ីន", "gender": "F", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "044", "name": "អ៊ី មានមុទិតា", "gender": "F", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "២"}, {"seat": "045", "name": "គឹម សិរីរិទ្ធិសក្ដិ", "gender": "M", "grade": "៨", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "046", "name": "ឃុយ គីមលី", "gender": "M", "grade": "៨", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "047", "name": "ចែត រ៉ាវីនល័ររ៉ា", "gender": "F", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "048", "name": "ជា ម៉ាណា", "gender": "M", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "049", "name": "ទូច ឌីធរណិន្ទ", "gender": "M", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "050", "name": "នូ នីឡា", "gender": "F", "grade": "៨", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "២"}, {"seat": "051", "name": "ផន គីមហុង", "gender": "M", "grade": "៨", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៣"}, {"seat": "052", "name": "ភីរុណ ទេវី", "gender": "F", "grade": "៨", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៣"}, {"seat": "053", "name": "វិន យូសៀ", "gender": "F", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៣"}, {"seat": "054", "name": "វីហ៊ល វ៉ាន់ដែត", "gender": "M", "grade": "៨", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៣"}, {"seat": "055", "name": "សៀក ពុទ្ធិរាជ្យ", "gender": "M", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៣"}, {"seat": "056", "name": "ហាប់  ពិសិដ្ឋរតនា", "gender": "M", "grade": "៨", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៣"}, {"seat": "057", "name": "ហុក ជាស៊ីន", "gender": "M", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៣"}, {"seat": "058", "name": "កែម សុផាន់ណារ៉ានី", "gender": "F", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "059", "name": "គ្រីម សូលីហ្សា", "gender": "F", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "060", "name": "ឈៀង យ៉េចម៉េង", "gender": "M", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "061", "name": "ប៉ែន បញ្ញាបុប្ផារ័ត្ន", "gender": "F", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "062", "name": "សុខន ប៊ុនឆាត", "gender": "M", "grade": "៨", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "063", "name": "សូវ រឹទ្ធានីសា", "gender": "F", "grade": "៨", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "064", "name": "សេង យូសៀង", "gender": "M", "grade": "៨", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "065", "name": "ហេង ហ្គេចលាំង", "gender": "F", "grade": "៨", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "066", "name": "ហៃ ណារ៉ង់", "gender": "M", "grade": "៨", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៣"}, {"seat": "067", "name": "ឈន រិទ្ធម៉ារីលីន", "gender": "F", "grade": "៩", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "068", "name": "ទូច នរះបញ្ញា", "gender": "M", "grade": "៩", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "069", "name": "ទៀ សុខកល្យាណ", "gender": "F", "grade": "៩", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "070", "name": "ផាត ណាំផាត់", "gender": "M", "grade": "៩", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "071", "name": "លី មុនីប្រាថ្នា", "gender": "F", "grade": "៩", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "072", "name": "លី ហ្គិចគីម", "gender": "F", "grade": "៩", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "073", "name": "វីរៈ មុនីសុបញ្ញា", "gender": "F", "grade": "៩", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "074", "name": "សំអាត សុនីតា", "gender": "F", "grade": "៩", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "075", "name": "សាន់ អាល់អ៊ីណា", "gender": "F", "grade": "៩", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៣"}, {"seat": "076", "name": "សុខ លក្ខណា", "gender": "F", "grade": "៩", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៤"}, {"seat": "077", "name": "សើន វណ្ណនិសារ", "gender": "F", "grade": "៩", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៤"}, {"seat": "078", "name": "ស្រី សុវណ្ណាលីតា", "gender": "F", "grade": "៩", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៤"}, {"seat": "079", "name": "ហុងសាត ឡាវីន", "gender": "F", "grade": "៩", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៤"}, {"seat": "080", "name": "ហ៊ុយ គីមវួច", "gender": "F", "grade": "៩", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៤"}, {"seat": "081", "name": "ខៀវ រតនៈមង្គល", "gender": "M", "grade": "៩", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "082", "name": "ឃិន វីរៈពុទ្ធិរាជ", "gender": "M", "grade": "៩", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "083", "name": "ឆេន សូលីកា", "gender": "F", "grade": "៩", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "084", "name": "ថូ វណ្ណៈ", "gender": "M", "grade": "៩", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "085", "name": "ទិត វិជ្ជរ៉ា", "gender": "F", "grade": "៩", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "086", "name": "នាក់ សុក្រពិស្សុត", "gender": "M", "grade": "៩", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "087", "name": "នាង មុនិរាជ", "gender": "M", "grade": "៩", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "088", "name": "ប៉ុល បញ្ញាបុត្រ", "gender": "M", "grade": "៩", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "089", "name": "សំអុល ជូលីណា", "gender": "F", "grade": "៩", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "090", "name": "សុង គុណសក្ដិ", "gender": "M", "grade": "៩", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "091", "name": "សួស បញ្ជឫទ្ធ", "gender": "M", "grade": "៩", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "092", "name": "សេង ស៊ុនឡុង", "gender": "M", "grade": "៩", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "093", "name": "ឡាំ ស៊ីវលីញ", "gender": "F", "grade": "៩", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៤"}, {"seat": "094", "name": "ជឹម ជីអ៊ូ", "gender": "F", "grade": "៩", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៤"}, {"seat": "095", "name": "ជឹម ហេងម៉េងឈាង", "gender": "F", "grade": "៩", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៤"}, {"seat": "096", "name": "ឌីប ដែន បញ្ញានៈ", "gender": "M", "grade": "៩", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៤"}, {"seat": "097", "name": "ធា ធីឆា", "gender": "F", "grade": "៩", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៤"}, {"seat": "098", "name": "នីឃឺលសន់ វីលៀម ថំមឹស្ស", "gender": "M", "grade": "៩", "school": "ច្បារអំពៅ", "subject": "រូបវិទ្យា", "room": "៤"}, {"seat": "099", "name": "ផន គីមឆេង", "gender": "F", "grade": "៩", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៤"}, {"seat": "100", "name": "ពៅ ច័ន្ទជូលី", "gender": "F", "grade": "៩", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៤"}, {"seat": "101", "name": "យ៉ាត វង្សរចនា", "gender": "F", "grade": "៩", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៥"}, {"seat": "102", "name": "វីរៈ នីនលេណា", "gender": "F", "grade": "៩", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៥"}, {"seat": "103", "name": "សុខ សុវណ្ណវឌ្ឍនា", "gender": "M", "grade": "៩", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៥"}, {"seat": "104", "name": "ហេង វឌ្ឍនមុនិនាថ", "gender": "F", "grade": "៩", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៥"}, {"seat": "105", "name": "ជា ណាលីន", "gender": "F", "grade": "១០", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "106", "name": "តាំង សុនីតា", "gender": "F", "grade": "១០", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "107", "name": "ទិត សុវណ្ណចរិយា", "gender": "F", "grade": "១០", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "108", "name": "ប៊ុនថន ច័ន្ទឧស្សាហ៍", "gender": "M", "grade": "១០", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "109", "name": "ផង់ រចនា", "gender": "F", "grade": "១០", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "110", "name": "ភោគ បុញ្ញតា", "gender": "F", "grade": "១០", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "111", "name": "ភ្លុក សិទ្ធិការ្យ", "gender": "F", "grade": "១០", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "112", "name": "មានសាយ ចំណាប់", "gender": "M", "grade": "១០", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "113", "name": "រតនា ទេពី", "gender": "F", "grade": "១០", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "114", "name": "លាង គីមអាន", "gender": "M", "grade": "១០", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "115", "name": "វិន សុវិជ្ជា", "gender": "M", "grade": "១០", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "116", "name": "ស៊ា នេសា", "gender": "F", "grade": "១០", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "117", "name": "សុខ ច័ន្ទសុរភី", "gender": "F", "grade": "១០", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "118", "name": "សុវណ្ណរ៉ា ម៉ាណា", "gender": "F", "grade": "១០", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "119", "name": "សូរ​ សុខសេដ្ឋាវត្តី", "gender": "F", "grade": "១០", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "120", "name": "ឡឹង ណាំហ្វុន", "gender": "F", "grade": "១០", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៥"}, {"seat": "121", "name": "ឈុន ថៃហួត", "gender": "M", "grade": "១០", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៥"}, {"seat": "122", "name": "ឌិហ្សូ រ៉េនណាន់ផេង", "gender": "M", "grade": "១០", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "៥"}, {"seat": "123", "name": "តាំង លីអ៊ីង", "gender": "F", "grade": "១០", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៥"}, {"seat": "124", "name": "ម៉ា ឡាយវឌ្ឍនា", "gender": "M", "grade": "១០", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៥"}, {"seat": "125", "name": "មាស ពេជ្រ", "gender": "F", "grade": "១០", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៥"}, {"seat": "126", "name": "ម៉ៅ សុវណ្ណរិទ្ធី", "gender": "M", "grade": "១០", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "៦"}, {"seat": "127", "name": "សំអឿន កក្កដា", "gender": "M", "grade": "១០", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "៦"}, {"seat": "128", "name": "ស៊ាង មួយរ៉ុង", "gender": "F", "grade": "១០", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៦"}, {"seat": "129", "name": "សុគ្រី ហ្វាហាម៉ា", "gender": "F", "grade": "១០", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៦"}, {"seat": "130", "name": "ស្រេង ជាសុធារ៉ា", "gender": "F", "grade": "១០", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៦"}, {"seat": "131", "name": "ហ៊ង ជីងលាង", "gender": "F", "grade": "១០", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៦"}, {"seat": "132", "name": "អិល គីតិច", "gender": "M", "grade": "១០", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៦"}, {"seat": "133", "name": "កុសល្យ កញ្ញារ៉ា", "gender": "F", "grade": "១០", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "134", "name": "កូ លីម៊ីជីង", "gender": "F", "grade": "១០", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "135", "name": "ចេង សូអ៊ីង", "gender": "F", "grade": "១០", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "136", "name": "នីឃឺលសន់ មាស សូនិតា", "gender": "F", "grade": "១០", "school": "ច្បារអំពៅ", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "137", "name": "នូ នីខូលី", "gender": "F", "grade": "១០", "school": "ច្បារអំពៅ", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "138", "name": "មាន សុជាតា", "gender": "F", "grade": "១០", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "139", "name": "លី អ៊ូលាង", "gender": "M", "grade": "១០", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "140", "name": "សុខ សុដារិយា", "gender": "F", "grade": "១០", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "141", "name": "សុខា មុនីចរណៃ", "gender": "F", "grade": "១០", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "142", "name": "សេក អាណាសុមនា", "gender": "F", "grade": "១០", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "143", "name": "អ៊ា សុខដាណាលីស", "gender": "F", "grade": "១០", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៦"}, {"seat": "144", "name": "កែវ ពេជ្រស្រីនិច", "gender": "F", "grade": "១១", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៦"}, {"seat": "145", "name": "ណុំ ម៉េងឆាយ", "gender": "M", "grade": "១១", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៦"}, {"seat": "146", "name": "ពន្លក ហៀងគីមឆាយ", "gender": "F", "grade": "១១", "school": "ច្បារអំពៅ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៦"}, {"seat": "147", "name": "ពេជ ណាប៉ា", "gender": "F", "grade": "១១", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៦"}, {"seat": "148", "name": "ម៉ាន់ ពេជ្រសុគន្ធា", "gender": "F", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៦"}, {"seat": "149", "name": "មួង នាគិន្រ្ទ", "gender": "M", "grade": "១១", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៦"}, {"seat": "150", "name": "ម៉េន ម៉េងហុង", "gender": "M", "grade": "១១", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៦"}, {"seat": "151", "name": "វ័រ ជូលីតា", "gender": "F", "grade": "១១", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៧"}, {"seat": "152", "name": "សាដាត ជូវីតា", "gender": "F", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៧"}, {"seat": "153", "name": "សុខា សក្ខណា", "gender": "F", "grade": "១១", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៧"}, {"seat": "154", "name": "ហោ សុវិទូ", "gender": "M", "grade": "១១", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៧"}, {"seat": "155", "name": "អាង សំណាង", "gender": "M", "grade": "១១", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៧"}, {"seat": "156", "name": "អ៊ុត ឯមមនសិការ", "gender": "M", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៧"}, {"seat": "157", "name": "អេង ដួងវលក្ខណ៍ទេពី", "gender": "F", "grade": "១១", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៧"}, {"seat": "158", "name": "គឹម សានគ័រ", "gender": "M", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "159", "name": "ឃិន វីរៈសត្យា", "gender": "F", "grade": "១១", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "160", "name": "ឆេង ស៊ីវវី", "gender": "F", "grade": "១១", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "161", "name": "ឌុច ម៉ាឌឺលីន", "gender": "F", "grade": "១១", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "162", "name": "ផាន រក្សា", "gender": "M", "grade": "១១", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "163", "name": "រតនៈ លីណា", "gender": "F", "grade": "១១", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "164", "name": "លន ពិសិដ្ឋសាណាវត្តី", "gender": "F", "grade": "១១", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "165", "name": "ហេង ឆៃលី", "gender": "M", "grade": "១១", "school": "ច្បារអំពៅ", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "166", "name": "ហេង មុនីសារភណ្ឌ", "gender": "F", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "167", "name": "ហេង សុវណ្ណតារា", "gender": "M", "grade": "១១", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "168", "name": "ឥម ឆាយឡុង", "gender": "M", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៧"}, {"seat": "169", "name": "គីម សុបញ្ញា", "gender": "F", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៧"}, {"seat": "170", "name": "ចាន់ រង្សី", "gender": "F", "grade": "១១", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៧"}, {"seat": "171", "name": "ចិនសុវណ្ណ សុម៉ាវត្តី", "gender": "F", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៧"}, {"seat": "172", "name": "ពៅ ដាហ្សីឡា", "gender": "F", "grade": "១១", "school": "ច្បារអំពៅ", "subject": "រូបវិទ្យា", "room": "៧"}, {"seat": "173", "name": "ម៉េត វិទូ", "gender": "M", "grade": "១១", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៧"}, {"seat": "174", "name": "យឿន ចាន់យុត", "gender": "M", "grade": "១១", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៧"}, {"seat": "175", "name": "យ៉េន សុខសាន្ដ", "gender": "M", "grade": "១១", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៧"}, {"seat": "176", "name": "លក្សណ៍ វង្សវឌ្ឍនៈ", "gender": "M", "grade": "១១", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៨"}, {"seat": "177", "name": "លឹម ស៊ុននរាជ", "gender": "M", "grade": "១១", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៨"}, {"seat": "178", "name": "សម្បត្តិ បញ្ញាពណ៌", "gender": "F", "grade": "១១", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៨"}, {"seat": "179", "name": "សេង រស្មី", "gender": "F", "grade": "១១", "school": "ច្បារអំពៅ", "subject": "រូបវិទ្យា", "room": "៨"}, {"seat": "180", "name": "សែម វីរៈបុត្រ", "gender": "M", "grade": "១១", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៨"}, {"seat": "181", "name": "អ៊ុយ លីណា", "gender": "F", "grade": "១១", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៨"}, {"seat": "182", "name": "ឆុំ សុវណ្ណលាភ", "gender": "M", "grade": "១២", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "183", "name": "ឈន សុវណ្ណវត្តី", "gender": "F", "grade": "១២", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "184", "name": "ណាត​ វិរបុត្រ", "gender": "M", "grade": "១២", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "185", "name": "មនោ ស្រីដាវ", "gender": "F", "grade": "១២", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "186", "name": "មួន សុម៉ាលីតា", "gender": "F", "grade": "១២", "school": "ផ្លូវជាតិលេខ៣", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "187", "name": "លន់ សុបញ្ញា", "gender": "F", "grade": "១២", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "188", "name": "វ៉ាន់ សុខណាម៉ានីត", "gender": "F", "grade": "១២", "school": "ទួលទំពូង", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "189", "name": "សយ ច័ន្ទមុន្នី", "gender": "M", "grade": "១២", "school": "ទួលគោក", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "190", "name": "អោម អេមមី", "gender": "F", "grade": "១២", "school": "ឬស្សីកែវ", "subject": "អក្សរសាស្រ្តខ្មែរ", "room": "៨"}, {"seat": "191", "name": "កែវ ប៊ុនឡុង", "gender": "M", "grade": "១២", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "192", "name": "ចាយ រិទ្ធិពង្ស", "gender": "M", "grade": "១២", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "193", "name": "ឈួរ សុខហួយ", "gender": "F", "grade": "១២", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "194", "name": "ទិត សុវណ្ណ", "gender": "M", "grade": "១២", "school": "ទួលទំពូង", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "195", "name": "មាស សុវណ្ណរតនៈ", "gender": "M", "grade": "១២", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "196", "name": "ម៉ូវ សុខធីតា", "gender": "F", "grade": "១២", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "197", "name": "វង្ស បញ្ញាឧត្តម", "gender": "M", "grade": "១២", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "198", "name": "វ៉ាន់ឌី អាជ្ញារាជ", "gender": "M", "grade": "១២", "school": "ឬស្សីកែវ", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "199", "name": "សុខា សុខហុង", "gender": "M", "grade": "១២", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "200", "name": "ស៊ុន​ មុនីរាជ", "gender": "M", "grade": "១២", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៨"}, {"seat": "201", "name": "សៀន គីមឈាង", "gender": "F", "grade": "១២", "school": "ផ្លូវជាតិលេខ៣", "subject": "គណិតវិទ្យា", "room": "៩"}, {"seat": "202", "name": "ឡាំ ហេងឡុង", "gender": "M", "grade": "១២", "school": "ទួលគោក", "subject": "គណិតវិទ្យា", "room": "៩"}, {"seat": "203", "name": "ចាន់ដា រ៉ាវឌ្ឍនៈ", "gender": "M", "grade": "១២", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៩"}, {"seat": "204", "name": "ថុល មាសជូលីតា", "gender": "F", "grade": "១២", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៩"}, {"seat": "205", "name": "ប៉ុលហំម ពិសិដ្ឋវិទ្យា", "gender": "M", "grade": "១២", "school": "ផ្លូវជាតិលេខ៣", "subject": "រូបវិទ្យា", "room": "៩"}, {"seat": "206", "name": "យ៉េន បញ្ញា", "gender": "F", "grade": "១២", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៩"}, {"seat": "207", "name": "លី សុវណ្ណកញ្ញា", "gender": "F", "grade": "១២", "school": "ទួលគោក", "subject": "រូបវិទ្យា", "room": "៩"}, {"seat": "208", "name": "លឹម ស៊ីវជ័ង", "gender": "F", "grade": "១២", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៩"}, {"seat": "209", "name": "វី ដេវីត", "gender": "M", "grade": "១២", "school": "ឬស្សីកែវ", "subject": "រូបវិទ្យា", "room": "៩"}, {"seat": "210", "name": "ស្រេងសុខេន ម៉ូលីកា", "gender": "F", "grade": "១២", "school": "ទួលទំពូង", "subject": "រូបវិទ្យា", "room": "៩"}],
     'schoolExamCandidates_test1': []
 };
+if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) {
+    window.embeddedExamData['schoolExamCandidates_test1'] = window.embeddedExamData['schoolExamCandidates'];
+}
         let mockCandidates = [];
         const defaultMockCandidates = [
             { room: "១", seat: "០០១", name: "កែវ ពិសិដ្ឋ", grade: "១២", school: "វិ. បាក់ទូក", subject: "គណិតវិទ្យា", gender: "M" },
@@ -4711,8 +4807,11 @@
             }
 
             // 2. EMBEDDED DATA FALLBACK: Instant display if localStorage is clean
-            if (!loaded && window.embeddedExamData && window.embeddedExamData[config.storageKey] && window.embeddedExamData[config.storageKey].length > 0) {
-                loaded = applyCandidatesData(window.embeddedExamData[config.storageKey]);
+            const fallbackEmbedded = (window.embeddedExamData && window.embeddedExamData[config.storageKey] && window.embeddedExamData[config.storageKey].length > 0)
+                ? window.embeddedExamData[config.storageKey]
+                : (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates'] && window.embeddedExamData['schoolExamCandidates'].length > 0 ? window.embeddedExamData['schoolExamCandidates'] : null);
+            if (!loaded && fallbackEmbedded && fallbackEmbedded.length > 0) {
+                loaded = applyCandidatesData(fallbackEmbedded);
                 try {
                     localStorage.setItem(config.storageKey, JSON.stringify(mockCandidates));
                 } catch(e) {}
@@ -4964,6 +5063,7 @@
             if (e.key === 'Escape') {
                 closeCandidateModal();
                 closeCloudSettingsModal();
+                closeOnlineScoreLinksModal();
                 return;
             }
 
@@ -5094,11 +5194,16 @@
             if (role === 'admin') {
                 if (container) {
                     container.innerHTML = `
-                        <div class="flex items-center space-x-2 bg-amber-50 border border-amber-300 text-amber-900 text-xs px-3 py-1 rounded-full font-bold shadow-sm">
-                            <span><i class="fas fa-shield-alt text-amber-600 mr-1"></i>របៀប Admin</span>
-                            <button onclick="switchUserRole('viewer')" class="bg-gray-700 hover:bg-gray-800 text-white text-[11px] px-2.5 py-0.5 rounded-full font-medium transition shadow-sm flex items-center ml-1" title="ចាកចេញទៅរបៀបមើល">
-                                <i class="fas fa-arrow-right-from-bracket text-[10px] mr-1"></i> ចាកចេញ
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openOnlineScoreLinksModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs px-3 py-1 rounded-full font-bold shadow-sm transition flex items-center gap-1.5" title="តំណភ្ជាប់ Online សម្រាប់ចែកជូនលោកគ្រូ-អ្នកគ្រូវាយបញ្ចូលពិន្ទុ">
+                                <i class="fas fa-globe text-indigo-600"></i><span>តំណភ្ជាប់ Online</span>
                             </button>
+                            <div class="flex items-center space-x-2 bg-amber-50 border border-amber-300 text-amber-900 text-xs px-3 py-1 rounded-full font-bold shadow-sm">
+                                <span><i class="fas fa-shield-alt text-amber-600 mr-1"></i>របៀប Admin</span>
+                                <button onclick="switchUserRole('viewer')" class="bg-gray-700 hover:bg-gray-800 text-white text-[11px] px-2.5 py-0.5 rounded-full font-medium transition shadow-sm flex items-center ml-1" title="ចាកចេញទៅរបៀបមើល">
+                                    <i class="fas fa-arrow-right-from-bracket text-[10px] mr-1"></i> ចាកចេញ
+                                </button>
+                            </div>
                         </div>
                     `;
                 }
@@ -5127,19 +5232,169 @@
             }
         }
 
-        function copyUserScoreLink() {
-            const curRoom = document.getElementById('scoreRoomFilter')?.value || '១';
-            const base = window.location.origin + window.location.pathname;
-            const url = `${base}?role=user&room=${encodeURIComponent(curRoom)}`;
+        function getOnlineBaseUrl() {
+            let saved = localStorage.getItem('online_system_base_url');
+            if (saved && saved.trim()) {
+                saved = saved.trim();
+                if (!saved.endsWith('/')) saved += '/';
+                return saved;
+            }
+            if (window.location.protocol.startsWith('http') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+                let path = window.location.pathname;
+                if (!path.endsWith('/')) {
+                    const lastSlash = path.lastIndexOf('/');
+                    path = lastSlash >= 0 ? path.substring(0, lastSlash + 1) : '/';
+                }
+                return window.location.origin + path;
+            }
+            return 'https://ritthyhong-arch.github.io/Examination-Preparation-/';
+        }
+
+        function toggleEditBaseUrl() {
+            const input = document.getElementById('onlineModalBaseUrlInput');
+            const btn = document.getElementById('toggleBaseUrlBtn');
+            if (!input) return;
+            if (input.hasAttribute('readonly')) {
+                input.removeAttribute('readonly');
+                input.classList.remove('bg-gray-50');
+                input.classList.add('bg-white', 'ring-2', 'ring-indigo-400');
+                input.focus();
+                if (btn) btn.innerHTML = '<i class="fas fa-check text-[10px]"></i> រួចរាល់';
+            } else {
+                input.setAttribute('readonly', 'true');
+                input.classList.remove('bg-white', 'ring-2', 'ring-indigo-400');
+                input.classList.add('bg-gray-50');
+                onBaseUrlChanged(input.value);
+                if (btn) btn.innerHTML = '<i class="fas fa-pen text-[10px]"></i> កែប្រែ';
+            }
+        }
+
+        function onBaseUrlChanged(val) {
+            if (!val || !val.trim()) return;
+            let clean = val.trim();
+            if (!clean.endsWith('/')) clean += '/';
+            localStorage.setItem('online_system_base_url', clean);
+            updateOnlineModalLinks();
+            showToast('បានរក្សាទុកអាសយដ្ឋាន Online Base URL ថ្មី!', 'success');
+        }
+
+        function openOnlineScoreLinksModal() {
+            const modal = document.getElementById('onlineScoreLinksModal');
+            if (!modal) return;
+
+            const roomSelect = document.getElementById('onlineModalRoomSelect');
+            if (roomSelect) {
+                const rooms = new Set();
+                if (Array.isArray(mockCandidates)) {
+                    mockCandidates.forEach(c => {
+                        if (c.room) rooms.add(String(c.room).trim());
+                    });
+                }
+                const sortedRooms = Array.from(rooms).sort((a, b) => {
+                    const na = (typeof parseKhmerNum === 'function') ? parseKhmerNum(a) : parseInt(a) || 0;
+                    const nb = (typeof parseKhmerNum === 'function') ? parseKhmerNum(b) : parseInt(b) || 0;
+                    return na - nb;
+                });
+
+                let html = '<option value="all">បន្ទប់ទាំងអស់ (All Rooms)</option>';
+                sortedRooms.forEach(r => {
+                    html += `<option value="${r}">បន្ទប់ទី ${r}</option>`;
+                });
+                roomSelect.innerHTML = html;
+
+                const curRoomFilter = document.getElementById('scoreRoomFilter')?.value;
+                if (curRoomFilter && (curRoomFilter === 'all' || sortedRooms.includes(curRoomFilter))) {
+                    roomSelect.value = curRoomFilter;
+                } else if (sortedRooms.length > 0) {
+                    roomSelect.value = sortedRooms[0];
+                }
+            }
+
+            updateOnlineModalLinks();
+            modal.classList.remove('hidden');
+        }
+
+        function closeOnlineScoreLinksModal() {
+            const modal = document.getElementById('onlineScoreLinksModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function updateOnlineModalLinks() {
+            const base = getOnlineBaseUrl();
+            const baseInput = document.getElementById('onlineModalBaseUrlInput');
+            if (baseInput && baseInput.hasAttribute('readonly')) baseInput.value = base;
+
+            const room = document.getElementById('onlineModalRoomSelect')?.value || 'all';
+            const finalUrl = `${base}?role=user&room=${encodeURIComponent(room)}`;
+
+            const urlDisplay = document.getElementById('onlineModalGeneratedUrl');
+            if (urlDisplay) urlDisplay.value = finalUrl;
+        }
+
+        function copyCurrentOnlineRoomLink() {
+            const urlDisplay = document.getElementById('onlineModalGeneratedUrl');
+            const url = urlDisplay ? urlDisplay.value : '';
+            if (!url) return;
+
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(url).then(() => {
-                    showToast(`បានចម្លង Link បញ្ចូលពិន្ទុ (បន្ទប់លេខ ${curRoom}) រួចរាល់!`, 'success');
+                    showToast('បានចម្លង Link រួចរាល់!', 'success');
                 }).catch(() => {
-                    prompt('សូមចម្លង Link នេះសម្រាប់ User បញ្ចូលពិន្ទុ៖', url);
+                    prompt('សូមចម្លង Link នេះ៖', url);
                 });
             } else {
-                prompt('សូមចម្លង Link នេះសម្រាប់ User បញ្ចូលពិន្ទុ៖', url);
+                prompt('សូមចម្លង Link នេះ៖', url);
             }
+        }
+
+        function testOpenOnlineLink() {
+            const urlDisplay = document.getElementById('onlineModalGeneratedUrl');
+            const url = urlDisplay ? urlDisplay.value : '';
+            if (url) {
+                window.open(url, '_blank');
+            }
+        }
+
+        function copyAllRoomsTelegramText() {
+            const base = getOnlineBaseUrl();
+            const rooms = new Set();
+            if (Array.isArray(mockCandidates)) {
+                mockCandidates.forEach(c => {
+                    if (c.room) rooms.add(String(c.room).trim());
+                });
+            }
+            const sortedRooms = Array.from(rooms).sort((a, b) => {
+                const na = (typeof parseKhmerNum === 'function') ? parseKhmerNum(a) : parseInt(a) || 0;
+                const nb = (typeof parseKhmerNum === 'function') ? parseKhmerNum(b) : parseInt(b) || 0;
+                return na - nb;
+            });
+
+            const examTitle = examConfigs[currentExamKey]?.title || 'ប្រឡងសាកល្បងលើកទី១';
+
+            let text = `📢 តំណភ្ជាប់សម្រាប់លោកគ្រូ-អ្នកគ្រូវាយបញ្ចូលពិន្ទុ ${examTitle} (Online)៖\n\n`;
+            if (sortedRooms.length > 0) {
+                sortedRooms.forEach(r => {
+                    text += `🔹 បន្ទប់ទី ${r}: ${base}?role=user&room=${encodeURIComponent(r)}\n`;
+                });
+                text += `\n🌐 បន្ទប់ទាំងអស់: ${base}?role=user&room=all\n`;
+            } else {
+                text += `🌐 តំណភ្ជាប់ទូទៅ: ${base}?role=user\n`;
+            }
+            text += `\n👉 លោកគ្រូ-អ្នកគ្រូគ្រាន់តែចុចលើ Link តាមបន្ទប់របស់ខ្លួន រួចវាយបញ្ចូលពិន្ទុ។ ប្រព័ន្ធនឹងរក្សាទុកស្វ័យប្រវត្តិភ្លាមៗ!`;
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('បានចម្លងបញ្ជី Link គ្រប់បន្ទប់សម្រាប់ Telegram រួចរាល់!', 'success');
+                }).catch(() => {
+                    prompt('សូមចម្លងអត្ថបទសម្រាប់ Telegram នេះ៖', text);
+                });
+            } else {
+                prompt('សូមចម្លងអត្ថបទសម្រាប់ Telegram នេះ៖', text);
+            }
+        }
+
+        function copyUserScoreLink() {
+            openOnlineScoreLinksModal();
         }
 
         function switchUserRole(newRole) {
