@@ -2298,7 +2298,12 @@
                 const saveExamKey = currentExamKey;
                 const storageKey = examConfigs[saveExamKey]?.storageKey || 'schoolExamCandidates';
                 let localCandidatesToSave = [...mockCandidates];
-                if (currentExamKey !== 'test1') {
+                if (currentExamKey === 'test1') {
+                    localCandidatesToSave = localCandidatesToSave.filter(c => {
+                        const subj = String(c.subject || '').trim();
+                        return subj.includes('វិទ្យាសាស្រ្តពិត') || subj.includes('វិទ្យាសាស្ត្រពិត') || subj.includes('វិ.សង្គម') || subj.includes('វិទ្យាសាស្រ្តសង្គម') || subj.includes('វិទ្យាសាស្ត្រសង្គម');
+                    });
+                } else {
                     localCandidatesToSave = localCandidatesToSave.filter(c => {
                         const subj = String(c.subject || '').trim();
                         return !subj.includes('វិទ្យា') || (subj.includes('គណិត') || subj.includes('រូប'));
@@ -2331,7 +2336,12 @@
                         if (!window.isBypassingMerge) {
                             // Only merge if not intentionally wiping or resetting to mock data
                             let cloudDataToMerge = cloudResult.data;
-                            if (currentExamKey !== 'test1') {
+                            if (currentExamKey === 'test1') {
+                                cloudDataToMerge = cloudDataToMerge.filter(c => {
+                                    const subj = String(c.subject || '').trim();
+                                    return subj.includes('វិទ្យាសាស្រ្តពិត') || subj.includes('វិទ្យាសាស្ត្រពិត') || subj.includes('វិ.សង្គម') || subj.includes('វិទ្យាសាស្រ្តសង្គម') || subj.includes('វិទ្យាសាស្ត្រសង្គម');
+                                });
+                            } else {
                                 cloudDataToMerge = cloudDataToMerge.filter(c => {
                                     const subj = String(c.subject || '').trim();
                                     return !subj.includes('វិទ្យា') || (subj.includes('គណិត') || subj.includes('រូប'));
@@ -5245,7 +5255,12 @@ function showTop3State() {
 
         function applyCandidatesData(parsedData) {
             if (!parsedData || !Array.isArray(parsedData) || parsedData.length === 0) return false;
-            if (currentExamKey !== 'test1') {
+                        if (currentExamKey === 'test1') {
+                parsedData = parsedData.filter(c => {
+                    const subj = String(c.subject || '').trim();
+                    return subj.includes('វិទ្យាសាស្រ្តពិត') || subj.includes('វិទ្យាសាស្ត្រពិត') || subj.includes('វិ.សង្គម') || subj.includes('វិទ្យាសាស្រ្តសង្គម') || subj.includes('វិទ្យាសាស្ត្រសង្គម');
+                });
+            } else {
                 parsedData = parsedData.filter(c => {
                     const subj = String(c.subject || '').trim();
                     return !subj.includes('វិទ្យា') || (subj.includes('គណិត') || subj.includes('រូប'));
