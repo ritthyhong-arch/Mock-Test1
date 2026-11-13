@@ -258,6 +258,56 @@
                 line-height: 1.25 !important;
             }
         }
+        /* ==================== PHONE MODE VS COMPUTER MODE STYLES ==================== */
+        body.mode-phone #scorePrintablePaper {
+            display: none !important;
+        }
+        body.mode-phone #scorePhoneModeContainer {
+            display: block !important;
+        }
+        body.mode-computer #scorePrintablePaper {
+            display: block !important;
+        }
+        body.mode-computer #scorePhoneModeContainer {
+            display: none !important;
+        }
+        @media print {
+            #scorePhoneModeContainer, .no-print-mobile {
+                display: none !important;
+            }
+            #scorePrintablePaper {
+                display: block !important;
+            }
+        }
+        /* Mobile Sticky Table Columns */
+        .mobile-sticky-seat {
+            position: sticky;
+            left: 0;
+            z-index: 5;
+            background-color: #f8fafc;
+        }
+        .mobile-sticky-name {
+            position: sticky;
+            left: 55px;
+            z-index: 5;
+            background-color: #ffffff;
+            box-shadow: 2px 0 4px -2px rgba(0,0,0,0.1);
+        }
+        .mobile-score-input::-webkit-inner-spin-button, 
+        .mobile-score-input::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+        .mobile-score-input {
+            -moz-appearance: textfield;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
     <style id="dynamicPrintOrientation">@page { size: A4 landscape; margin: 4mm; }</style>
 </head>
@@ -280,21 +330,26 @@
 
     <!-- ផ្ទៃបង្ហាញទិន្នន័យ (Main Content) -->
     <div class="flex-1 flex flex-col overflow-hidden w-full">
-        <header class="h-16 bg-white shadow flex items-center justify-between px-4 sm:px-6 relative z-10 no-print">
-            <div class="flex items-center w-full sm:w-1/3">
-                <button id="openSidebar" class="md:hidden mr-4 text-gray-500 hover:text-blue-600 focus:outline-none">
+        <header class="h-16 bg-white shadow flex items-center justify-between px-3 sm:px-6 relative z-10 no-print gap-2">
+            <div class="flex items-center min-w-0 flex-1 max-w-[200px] sm:max-w-xs">
+                <button id="openSidebar" class="md:hidden mr-2 text-gray-500 hover:text-blue-600 focus:outline-none shrink-0" title="បើកម៉ឺនុយ">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
-                <div class="flex items-center bg-gray-100 rounded-lg px-3 py-2 w-full focus-within:ring-2 focus-within:ring-blue-400 transition">
-                    <i class="fas fa-search text-gray-500"></i>
-                    <input type="text" id="searchInput" placeholder="ស្វែងរក..." class="bg-transparent border-none outline-none ml-2 w-full text-sm">
+                <div class="flex items-center bg-gray-100 rounded-lg px-2.5 py-1.5 w-full focus-within:ring-2 focus-within:ring-blue-400 transition">
+                    <i class="fas fa-search text-gray-400 text-xs"></i>
+                    <input type="text" id="searchInput" placeholder="ស្វែងរក..." class="bg-transparent border-none outline-none ml-1.5 w-full text-xs sm:text-sm">
                 </div>
             </div>
-            <div class="flex items-center space-x-4 sm:space-x-6 relative">
+            <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
+                <!-- Screen Mode Toggle Button (Phone vs Computer) -->
+                <button id="navScreenModeToggle" onclick="toggleScreenMode()" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition shadow-sm bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 cursor-pointer" title="ប្តូររវាង របៀបទូរស័ព្ទ (Phone) និង របៀបកុំព្យូទ័រ (Computer)">
+                    <i class="fas fa-mobile-alt text-sm"></i>
+                    <span id="navScreenModeText" class="hidden xs:inline">របៀបទូរស័ព្ទ</span>
+                </button>
                 <!-- Role Mode Badge & Switcher Container -->
-                <div id="roleModeBadgeContainer" class="flex items-center"></div>
-                <!-- Notifications -->
-                <div class="relative">
+                <div id="roleModeBadgeContainer" class="flex items-center shrink-0"></div>
+                <!-- Notifications (hidden on small phones to give space) -->
+                <div class="relative hidden sm:block">
                     <button id="notifButton" class="relative text-gray-500 hover:text-blue-600 focus:outline-none transition" onclick="toggleDropdown('notifDropdown')">
                         <i class="fas fa-bell text-xl"></i>
                         <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center border border-white">3</span>
@@ -832,6 +887,105 @@
                                     <button class="bg-green-100 hover:bg-green-200 text-green-800 border border-green-300 font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="exportScoreToExcel()"><i class="fas fa-file-excel mr-1"></i> Excel</button>
                                     <button class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="printScoreSheet()"><i class="fas fa-print mr-1"></i> Print</button>
                                     <button class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-medium px-3.5 py-2 rounded-lg transition shadow-sm text-sm flex items-center" onclick="openOnlineScoreLinksModal()" title="តំណភ្ជាប់ Online សម្រាប់ចែកជូនលោកគ្រូ-អ្នកគ្រូវាយបញ្ចូលពិន្ទុ"><i class="fas fa-globe mr-1.5 text-indigo-500"></i> តំណភ្ជាប់ Online</button>
+                                    <button id="toolbarScreenModeToggle" onclick="toggleScreenMode()" class="flex items-center gap-1.5 px-3 py-2 rounded-lg transition shadow-sm text-sm font-bold border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer" title="ប្តូររវាង របៀបទូរស័ព្ទ (Phone) និង របៀបកុំព្យូទ័រ (Computer)">
+                                        <i class="fas fa-mobile-alt"></i> <span id="toolbarScreenModeText">របៀបទូរស័ព្ទ</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Mobile Phone Score Interface (Phone Mode) -->
+                            <div id="scorePhoneModeContainer" class="hidden no-print w-full">
+                                <!-- Mobile Quick Bar / Filters -->
+                                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-3 mb-4 space-y-3">
+                                    <!-- Row 1: Room Selector & Mode Switch -->
+                                    <div class="flex items-center justify-between gap-2">
+                                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                                            <span class="text-xs font-bold text-gray-600 whitespace-nowrap"><i class="fas fa-door-closed text-blue-600 mr-1"></i>បន្ទប់៖</span>
+                                            <select id="mobileScoreRoomFilter" onchange="onMobileRoomFilterChange(this.value)" class="bg-blue-50 border border-blue-300 text-blue-900 font-bold py-1.5 px-2.5 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-0">
+                                                <option value="១">បន្ទប់លេខ ១</option>
+                                                <option value="២">បន្ទប់លេខ ២</option>
+                                                <option value="៣">បន្ទប់លេខ ៣</option>
+                                                <option value="៤">បន្ទប់លេខ ៤</option>
+                                                <option value="៥">បន្ទប់លេខ ៥</option>
+                                            </select>
+                                        </div>
+                                        <button onclick="toggleScreenMode()" class="shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition shadow-sm cursor-pointer" title="ប្តូរទៅរបៀបកុំព្យូទ័រ">
+                                            <i class="fas fa-desktop text-blue-600"></i>
+                                            <span>💻 របៀប PC</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Row 2: Search Candidate & Count Badge -->
+                                    <div class="flex items-center gap-2">
+                                        <div class="relative flex-1">
+                                            <i class="fas fa-search absolute left-2.5 top-2.5 text-gray-400 text-xs"></i>
+                                            <input type="text" id="mobileCandidateSearch" oninput="filterMobileCandidates(this.value)" placeholder="ស្វែងរកឈ្មោះ ឬ លេខតុ..." class="w-full pl-7 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-300 rounded-lg focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-400">
+                                        </div>
+                                        <div id="mobileCandidateCountBadge" class="shrink-0 text-xs font-bold px-2.5 py-1.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg whitespace-nowrap">
+                                            ២៥ បេក្ខជន
+                                        </div>
+                                    </div>
+
+                                    <!-- Row 3: Subject Quick Selection Pills -->
+                                    <div>
+                                        <div class="text-[11px] font-semibold text-gray-500 mb-1.5 flex items-center justify-between">
+                                            <span><i class="fas fa-hand-pointer text-blue-500 mr-1"></i>ជ្រើសរើសមុខវិជ្ជាដើម្បីបញ្ចូល (Focus Subject)៖</span>
+                                            <span id="mobileSubjectActiveLabel" class="text-blue-600 font-bold">គ្រប់មុខវិជ្ជា</span>
+                                        </div>
+                                        <div id="mobileSubjectPills" class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+                                            <!-- Dynamically generated pills -->
+                                        </div>
+                                    </div>
+
+                                    <!-- Row 4: Sub-view Switch (Cards vs Table) & Auto-Save Status -->
+                                    <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs">
+                                        <div class="flex items-center bg-gray-100 p-0.5 rounded-lg border border-gray-200">
+                                            <button id="btnMobileViewCards" onclick="setMobileSubView('cards')" class="px-2.5 py-1 rounded-md font-bold text-xs bg-white text-blue-700 shadow-sm transition">
+                                                <i class="fas fa-th-large mr-1"></i>ទម្រង់កាត
+                                            </button>
+                                            <button id="btnMobileViewTable" onclick="setMobileSubView('table')" class="px-2.5 py-1 rounded-md font-medium text-xs text-gray-600 hover:text-gray-900 transition">
+                                                <i class="fas fa-table mr-1"></i>តារាងរំកិល
+                                            </button>
+                                        </div>
+                                        <div id="mobileAutoSaveIndicator" class="flex items-center text-[11px] font-semibold text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200 shadow-xs">
+                                            <span class="w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
+                                            <span id="mobileAutoSaveText">រក្សាទុកស្វ័យប្រវត្តិ</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Candidate Cards List (Cards View) -->
+                                <div id="mobileCardsContainer" class="space-y-3 pb-24">
+                                    <!-- Rendered dynamically -->
+                                </div>
+
+                                <!-- Alternative Scrollable Table (Table View) -->
+                                <div id="mobileTableContainer" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 overflow-x-auto pb-24 mb-4">
+                                    <table class="w-full text-xs border-collapse">
+                                        <thead id="mobileThead" class="bg-gray-100 text-gray-800">
+                                            <!-- Headers -->
+                                        </thead>
+                                        <tbody id="mobileTableBody">
+                                            <!-- Rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Mobile Sticky Floating Footer -->
+                                <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-gray-200 px-4 py-2.5 flex items-center justify-between z-30 shadow-lg md:hidden">
+                                    <div class="flex items-center gap-2 text-xs">
+                                        <span id="mobileBottomStats" class="font-bold text-gray-800">បន្ទប់ ១</span>
+                                        <span class="text-gray-300">|</span>
+                                        <span id="mobileBottomPassFail" class="text-[11px] font-semibold text-gray-600">ជាប់: 0 • ធ្លាក់: 0</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <button onclick="saveCandidates(false)" class="bg-green-600 hover:bg-green-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs shadow flex items-center gap-1 transition">
+                                            <i class="fas fa-save"></i><span>រក្សាទុក</span>
+                                        </button>
+                                        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1.5 rounded-lg text-xs border border-gray-300" title="ឡើងលើ">
+                                            <i class="fas fa-arrow-up"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -2862,6 +3016,13 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                     selectScore.value = uniqueRooms[0];
                 }
             }
+            const selectMobileScore = document.getElementById('mobileScoreRoomFilter');
+            if (selectMobileScore) {
+                selectMobileScore.innerHTML = roomOptionsHTML + optionsHTML;
+                if (selectScore && selectScore.value) {
+                    selectMobileScore.value = selectScore.value;
+                }
+            }
             
             if (selectDashBranch) {
                 let uniqueBranches = [...new Set(mockCandidates.map(c => String(c.school || 'ផ្សេងៗ').trim()))].filter(b => b !== '');
@@ -3533,6 +3694,241 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
         
 
         // មុខងារសម្រាប់ទម្រង់បញ្ចូលពិន្ទុ
+                // ==================== SCREEN MODE (PHONE VS COMPUTER) SUBSYSTEM ====================
+        window.currentScreenMode = 'computer';
+        window.activeMobileFocusedSubject = 'all';
+        window.activeMobileSubView = 'cards';
+        window.mobileSearchFilterQuery = '';
+
+        function getStoredScreenMode() {
+            return localStorage.getItem('preferred_screen_mode');
+        }
+
+        function detectInitialScreenMode() {
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const screenParam = urlParams.get('screen') || urlParams.get('device') || urlParams.get('view_mode');
+                if (screenParam && (screenParam.toLowerCase() === 'phone' || screenParam.toLowerCase() === 'mobile')) {
+                    return 'phone';
+                }
+                if (screenParam && (screenParam.toLowerCase() === 'computer' || screenParam.toLowerCase() === 'desktop' || screenParam.toLowerCase() === 'pc')) {
+                    return 'computer';
+                }
+            } catch(e) {}
+
+            const saved = getStoredScreenMode();
+            if (saved === 'phone' || saved === 'computer') {
+                return saved;
+            }
+
+            const isMobileWidth = window.innerWidth <= 820;
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || '');
+            return (isMobileWidth || isMobileUA) ? 'phone' : 'computer';
+        }
+
+        function getActiveScreenMode() {
+            return window.currentScreenMode || 'computer';
+        }
+
+        function applyScreenMode(mode, silent = true) {
+            window.currentScreenMode = mode;
+            document.body.classList.remove('mode-phone', 'mode-computer');
+            document.body.classList.add('mode-' + mode);
+
+            const paper = document.getElementById('scorePrintablePaper');
+            const mobileContainer = document.getElementById('scorePhoneModeContainer');
+
+            if (mode === 'phone') {
+                if (paper) paper.classList.add('hidden');
+                if (mobileContainer) mobileContainer.classList.remove('hidden');
+            } else {
+                if (paper) paper.classList.remove('hidden');
+                if (mobileContainer) mobileContainer.classList.add('hidden');
+            }
+
+            // Update Header Toggle Button
+            const navBtn = document.getElementById('navScreenModeToggle');
+            if (navBtn) {
+                if (mode === 'phone') {
+                    navBtn.innerHTML = '<i class="fas fa-mobile-alt text-blue-600"></i><span id="navScreenModeText" class="hidden xs:inline">របៀបទូរស័ព្ទ</span>';
+                    navBtn.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition shadow-sm bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100 cursor-pointer';
+                    navBtn.title = 'បច្ចុប្បន្ន: របៀបទូរស័ព្ទ (ចុចដើម្បីប្តូរទៅ របៀបកុំព្យូទ័រ)';
+                } else {
+                    navBtn.innerHTML = '<i class="fas fa-desktop text-gray-700"></i><span id="navScreenModeText" class="hidden xs:inline">របៀបកុំព្យូទ័រ</span>';
+                    navBtn.className = 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold border transition shadow-sm bg-gray-50 border-gray-300 text-gray-700 hover:bg-gray-100 cursor-pointer';
+                    navBtn.title = 'បច្ចុប្បន្ន: របៀបកុំព្យូទ័រ (ចុចដើម្បីប្តូរទៅ របៀបទូរស័ព្ទ)';
+                }
+            }
+
+            // Update Toolbar Toggle Button
+            const toolbarBtn = document.getElementById('toolbarScreenModeToggle');
+            if (toolbarBtn) {
+                if (mode === 'phone') {
+                    toolbarBtn.innerHTML = '<i class="fas fa-mobile-alt"></i> <span id="toolbarScreenModeText">របៀបទូរស័ព្ទ</span>';
+                    toolbarBtn.className = 'flex items-center gap-1.5 px-3 py-2 rounded-lg transition shadow-sm text-sm font-bold border border-blue-300 bg-blue-50 text-blue-700 hover:bg-blue-100 cursor-pointer';
+                    toolbarBtn.title = 'បច្ចុប្បន្ន: របៀបទូរស័ព្ទ (ចុចដើម្បីប្តូរទៅ របៀបកុំព្យូទ័រ)';
+                } else {
+                    toolbarBtn.innerHTML = '<i class="fas fa-desktop"></i> <span id="toolbarScreenModeText">របៀបកុំព្យូទ័រ</span>';
+                    toolbarBtn.className = 'flex items-center gap-1.5 px-3 py-2 rounded-lg transition shadow-sm text-sm font-bold border border-gray-300 bg-gray-50 text-gray-700 hover:bg-gray-100 cursor-pointer';
+                    toolbarBtn.title = 'បច្ចុប្បន្ន: របៀបកុំព្យូទ័រ (ចុចដើម្បីប្តូរទៅ របៀបទូរស័ព្ទ)';
+                }
+            }
+
+            // Sync dropdowns
+            const curScoreRoom = document.getElementById('scoreRoomFilter')?.value || localStorage.getItem('last_selected_score_room') || '១';
+            const mobileSelect = document.getElementById('mobileScoreRoomFilter');
+            if (mobileSelect && mobileSelect.value !== curScoreRoom) {
+                mobileSelect.value = curScoreRoom;
+            }
+
+            // Render room data
+            renderScoreTableForRoom(curScoreRoom);
+        }
+
+        function toggleScreenMode() {
+            const current = getActiveScreenMode();
+            const nextMode = current === 'phone' ? 'computer' : 'phone';
+            localStorage.setItem('preferred_screen_mode', nextMode);
+            applyScreenMode(nextMode, false);
+            showToast(nextMode === 'phone' ? '📱 បានប្តូរទៅ របៀបទូរស័ព្ទ (Phone Mode)' : '💻 បានប្តូរទៅ របៀបកុំព្យូទ័រ (Computer Mode)', 'info');
+        }
+
+        function initScreenMode() {
+            const initialMode = detectInitialScreenMode();
+            applyScreenMode(initialMode, true);
+
+            let resizeTimer = null;
+            window.addEventListener('resize', () => {
+                if (localStorage.getItem('preferred_screen_mode')) return;
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    const autoMode = detectInitialScreenMode();
+                    if (autoMode !== window.currentScreenMode) {
+                        applyScreenMode(autoMode, true);
+                    }
+                }, 250);
+            });
+        }
+
+        function onMobileRoomFilterChange(val) {
+            const desktopSelect = document.getElementById('scoreRoomFilter');
+            if (desktopSelect) desktopSelect.value = val;
+            filterScoreRoom(val);
+        }
+
+        function setMobileSubView(viewType) {
+            window.activeMobileSubView = viewType;
+            const btnCards = document.getElementById('btnMobileViewCards');
+            const btnTable = document.getElementById('btnMobileViewTable');
+            const containerCards = document.getElementById('mobileCardsContainer');
+            const containerTable = document.getElementById('mobileTableContainer');
+
+            if (viewType === 'cards') {
+                if (btnCards) {
+                    btnCards.className = 'px-2.5 py-1 rounded-md font-bold text-xs bg-white text-blue-700 shadow-sm transition';
+                }
+                if (btnTable) {
+                    btnTable.className = 'px-2.5 py-1 rounded-md font-medium text-xs text-gray-600 hover:text-gray-900 transition';
+                }
+                if (containerCards) containerCards.classList.remove('hidden');
+                if (containerTable) containerTable.classList.add('hidden');
+            } else {
+                if (btnCards) {
+                    btnCards.className = 'px-2.5 py-1 rounded-md font-medium text-xs text-gray-600 hover:text-gray-900 transition';
+                }
+                if (btnTable) {
+                    btnTable.className = 'px-2.5 py-1 rounded-md font-bold text-xs bg-white text-blue-700 shadow-sm transition';
+                }
+                if (containerCards) containerCards.classList.add('hidden');
+                if (containerTable) containerTable.classList.remove('hidden');
+            }
+        }
+
+        function setMobileFocusedSubject(colIdx) {
+            window.activeMobileFocusedSubject = colIdx;
+            const labelEl = document.getElementById('mobileSubjectActiveLabel');
+            const pillsContainer = document.getElementById('mobileSubjectPills');
+            
+            if (pillsContainer) {
+                pillsContainer.querySelectorAll('.mobile-subject-pill').forEach(btn => {
+                    const btnCol = btn.getAttribute('data-col');
+                    if (String(btnCol) === String(colIdx)) {
+                        btn.className = 'mobile-subject-pill shrink-0 px-3 py-1 rounded-full text-xs font-bold bg-blue-600 text-white shadow-sm transition cursor-pointer';
+                        if (labelEl) labelEl.textContent = btn.textContent.trim();
+                    } else {
+                        btn.className = 'mobile-subject-pill shrink-0 px-3 py-1 rounded-full text-xs font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition cursor-pointer';
+                    }
+                });
+            }
+
+            const cardsContainer = document.getElementById('mobileCardsContainer');
+            if (cardsContainer) {
+                cardsContainer.querySelectorAll('.candidate-mobile-card').forEach(card => {
+                    card.querySelectorAll('.subject-input-box').forEach(box => {
+                        const boxCol = box.getAttribute('data-col');
+                        if (colIdx === 'all' || colIdx === null || colIdx === undefined) {
+                            box.style.display = '';
+                            box.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50/60');
+                        } else if (String(boxCol) === String(colIdx)) {
+                            box.style.display = '';
+                            box.classList.add('ring-2', 'ring-blue-500', 'bg-blue-50/60');
+                        } else {
+                            box.style.display = '';
+                            box.classList.remove('ring-2', 'ring-blue-500', 'bg-blue-50/60');
+                        }
+                    });
+                });
+            }
+        }
+
+        function filterMobileCandidates(query) {
+            window.mobileSearchFilterQuery = (query || '').trim().toLowerCase();
+            const q = window.mobileSearchFilterQuery;
+            const cardsContainer = document.getElementById('mobileCardsContainer');
+            const tableBody = document.getElementById('mobileTableBody');
+            let visibleCount = 0;
+
+            if (cardsContainer) {
+                cardsContainer.querySelectorAll('.candidate-mobile-card').forEach(card => {
+                    const seat = (card.getAttribute('data-seat') || '').toLowerCase();
+                    const name = (card.getAttribute('data-name') || '').toLowerCase();
+                    const match = !q || seat.includes(q) || name.includes(q);
+                    card.style.display = match ? '' : 'none';
+                    if (match) visibleCount++;
+                });
+            }
+
+            if (tableBody) {
+                tableBody.querySelectorAll('tr').forEach(tr => {
+                    const seat = (tr.getAttribute('data-seat') || '').toLowerCase();
+                    const name = (tr.getAttribute('data-name') || '').toLowerCase();
+                    const match = !q || seat.includes(q) || name.includes(q);
+                    tr.style.display = match ? '' : 'none';
+                });
+            }
+
+            const badge = document.getElementById('mobileCandidateCountBadge');
+            if (badge) {
+                badge.textContent = `${toKhmerNum(visibleCount)} បេក្ខជន`;
+            }
+        }
+
+        function updateMobileStats(cands, roomNum) {
+            let passCount = 0;
+            let failCount = 0;
+            cands.forEach(c => {
+                if (c.passed === true) passCount++;
+                if (c.passed === false) failCount++;
+            });
+            const badge = document.getElementById('mobileCandidateCountBadge');
+            if (badge) badge.textContent = `${toKhmerNum(cands.length)} បេក្ខជន`;
+            const bottomStats = document.getElementById('mobileBottomStats');
+            if (bottomStats) bottomStats.textContent = roomNum === 'all' ? 'គ្រប់បន្ទប់' : `បន្ទប់ ${roomNum}`;
+            const bottomPF = document.getElementById('mobileBottomPassFail');
+            if (bottomPF) bottomPF.textContent = `ជាប់: ${toKhmerNum(passCount)} • ធ្លាក់: ${toKhmerNum(failCount)}`;
+        }
+
+        // មុខងារសម្រាប់ទម្រង់បញ្ចូលពិន្ទុ
         function showScoreInput() {
             const top3 = document.getElementById('resultTop3State');
             if (top3) top3.classList.add('hidden');
@@ -3564,6 +3960,15 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                     if (scoreRoomPrefix) scoreRoomPrefix.style.display = 'inline';
                 }
             }
+            const mobileSelect = document.getElementById('mobileScoreRoomFilter');
+            if (mobileSelect && mobileSelect.value !== roomNumber) {
+                mobileSelect.value = roomNumber;
+            }
+            const desktopSelect = document.getElementById('scoreRoomFilter');
+            if (desktopSelect && desktopSelect.value !== roomNumber) {
+                desktopSelect.value = roomNumber;
+            }
+
             renderScoreTableForRoom(roomNumber);
             const msg = roomNumber === 'all' ? 'គ្រប់បន្ទប់ទាំងអស់' : `បន្ទប់លេខ ${roomNumber}`;
             showToast(`កំពុងបើកទម្រង់ពិន្ទុសម្រាប់: ${msg}`, 'info');
@@ -3590,11 +3995,6 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
             
             tbody.innerHTML = '';
             
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="16" class="border border-black px-1 py-4 text-center text-gray-500">មិនមានទិន្នន័យទេ</td></tr>';
-                return;
-            }
-            
             // Dynamically update headers based on specialization
             let isSocial = false;
             if (filtered.length > 0) {
@@ -3606,6 +4006,9 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
             
             // កំណត់ពិន្ទុអតិបរមាតាមមុខវិជ្ជា
             const maxScores = isSocial ? [75, 125, 75, 75, 75, 50, 25] : [125, 75, 50, 75, 75, 75, 25];
+            const subjectNames = isSocial 
+                ? ['គណិត', 'ខ្មែរ', 'ប្រវត្តិ', 'ភូមិ', 'ពលរដ្ឋ', 'ផែនដី', 'ភាសា']
+                : ['គណិត', 'ខ្មែរ', 'ប្រវត្តិ', 'គីមី', 'រូប', 'ជីវ', 'ភាសា'];
             
             const subSco1 = document.getElementById('th-sco-s1');
             if (subSco1) {
@@ -3642,9 +4045,15 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                 }
             }
 
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="16" class="border border-black px-1 py-4 text-center text-gray-500">មិនមានទិន្នន័យទេ</td></tr>';
+            }
+
+            // ==================== 1. DESKTOP TABLE ROWS ====================
             filtered.forEach((c, index) => {
                 const tr = document.createElement('tr');
                 tr.style.height = '20px';
+                tr.setAttribute('data-cand-key', getCandidateKey(c));
                 const m = c.mention;
                 const mColor = m === 'A' ? 'text-blue-600' : m === 'B' ? 'text-green-600' : m === 'C' ? 'text-yellow-600' : m === 'D' ? 'text-orange-500' : m === 'E' ? 'text-purple-600' : m === 'F' ? 'text-red-600' : 'text-gray-800';
                 const strikeClass = (currentExamKey === 'test1' && c.passed === false) ? 'failed-candidate-strike' : '';
@@ -3662,12 +4071,12 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                     <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #e0f2fe;"><input type="number" data-col="1" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" ${getCurrentUserRole() === "viewer" ? "readonly" : ""} min="0" max="100" value="${c.score2 !== undefined ? c.score2 : ''}"></td>
                     ` : `
                     <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #e0f2fe;"><input type="number" data-col="0" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" ${getCurrentUserRole() === "viewer" ? "readonly" : ""} min="0" max="${maxScores[0]}" value="${c.score1 !== undefined ? c.score1 : ''}"></td>
-                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #f3f4f6;"><input type="number" data-col="1" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" min="0" max="${maxScores[1]}" value="${c.score2 !== undefined ? c.score2 : ''}"></td>
-                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #e0f2fe;"><input type="number" data-col="2" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" min="0" max="${maxScores[2]}" value="${c.score3 !== undefined ? c.score3 : ''}"></td>
-                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #f3f4f6;"><input type="number" data-col="3" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" min="0" max="${maxScores[3]}" value="${c.score4 !== undefined ? c.score4 : ''}"></td>
-                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #e0f2fe;"><input type="number" data-col="4" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" min="0" max="${maxScores[4]}" value="${c.score5 !== undefined ? c.score5 : ''}"></td>
-                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #f3f4f6;"><input type="number" data-col="5" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" min="0" max="${maxScores[5]}" value="${c.score6 !== undefined ? c.score6 : ''}"></td>
-                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #e0f2fe;"><input type="number" data-col="6" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" min="0" max="${maxScores[6]}" value="${c.score7 !== undefined ? c.score7 : ''}"></td>
+                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #f3f4f6;"><input type="number" data-col="1" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" ${getCurrentUserRole() === "viewer" ? "readonly" : ""} min="0" max="${maxScores[1]}" value="${c.score2 !== undefined ? c.score2 : ''}"></td>
+                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #e0f2fe;"><input type="number" data-col="2" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" ${getCurrentUserRole() === "viewer" ? "readonly" : ""} min="0" max="${maxScores[2]}" value="${c.score3 !== undefined ? c.score3 : ''}"></td>
+                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #f3f4f6;"><input type="number" data-col="3" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" ${getCurrentUserRole() === "viewer" ? "readonly" : ""} min="0" max="${maxScores[3]}" value="${c.score4 !== undefined ? c.score4 : ''}"></td>
+                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #e0f2fe;"><input type="number" data-col="4" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" ${getCurrentUserRole() === "viewer" ? "readonly" : ""} min="0" max="${maxScores[4]}" value="${c.score5 !== undefined ? c.score5 : ''}"></td>
+                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #f3f4f6;"><input type="number" data-col="5" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" ${getCurrentUserRole() === "viewer" ? "readonly" : ""} min="0" max="${maxScores[5]}" value="${c.score6 !== undefined ? c.score6 : ''}"></td>
+                    <td class="border border-black align-middle px-0 py-0 text-center" style="background-color: #e0f2fe;"><input type="number" data-col="6" class="score-input w-full h-full min-w-0 text-center bg-transparent outline-none py-0 font-bold text-gray-800" ${getCurrentUserRole() === "viewer" ? "readonly" : ""} min="0" max="${maxScores[6]}" value="${c.score7 !== undefined ? c.score7 : ''}"></td>
                     `}
                     <td class="border border-black align-middle px-2 py-0 text-center font-bold text-black">${c.total !== undefined && !isNaN(c.total) ? c.total : ''}</td>
                     <td class="border border-black align-middle px-2 py-0 text-center font-bold ${c.passed ? 'text-green-600' : (c.passed === false ? 'text-red-600' : '')}">${c.passed ? 'ជាប់' : (c.passed === false ? 'ធ្លាក់' : '')}</td>
@@ -3676,11 +4085,9 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                 tbody.appendChild(tr);
             });
             
-            // Add auto-calc & navigation logic for inputs
+            // Add desktop auto-calc & navigation logic for inputs
             const inputs = tbody.querySelectorAll('input[type="number"]');
             inputs.forEach(input => {
-                
-                // 1. Excel-like Arrow Keys (Up, Down, Left, Right), Enter & Tab Navigation
                 input.addEventListener('keydown', function(e) {
                     const isDown = e.key === 'ArrowDown' || e.code === 'ArrowDown' || e.keyCode === 40;
                     const isUp = e.key === 'ArrowUp' || e.code === 'ArrowUp' || e.keyCode === 38;
@@ -3719,7 +4126,6 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                         if (colIdx < rowInputs.length - 1) {
                             targetInput = rowInputs[colIdx + 1];
                         } else if (rowIdx < allRows.length - 1) {
-                            // Wrap to first subject of next student
                             const nextRowInputs = allRows[rowIdx + 1].querySelectorAll('input.score-input');
                             if (nextRowInputs.length > 0) targetInput = nextRowInputs[0];
                         }
@@ -3728,7 +4134,6 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                         if (colIdx > 0) {
                             targetInput = rowInputs[colIdx - 1];
                         } else if (rowIdx > 0) {
-                            // Wrap to last subject of previous student
                             const prevRowInputs = allRows[rowIdx - 1].querySelectorAll('input.score-input');
                             if (prevRowInputs.length > 0) targetInput = prevRowInputs[prevRowInputs.length - 1];
                         }
@@ -3740,26 +4145,22 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                     }
                 });
 
-                // Prevent mouse wheel from accidentally incrementing numbers when scrolling
                 input.addEventListener('wheel', function(e) {
                     e.preventDefault();
                 }, { passive: false });
 
-                // 2. Excel-like Drag to Fill Down (Left click + drag)
                 input.addEventListener('mousedown', function(e) {
                     window.dragScoreValue = this.value;
                 });
                 
                 input.addEventListener('mouseenter', function(e) {
-                    // e.buttons === 1 means Left Mouse Button is held down
                     if (e.buttons === 1 && window.dragScoreValue !== undefined) {
                         this.value = window.dragScoreValue;
-                        this.dispatchEvent(new Event('input')); // Trigger calculation
+                        this.dispatchEvent(new Event('input'));
                         this.focus();
                     }
                 });
                 
-                // Capture snapshot for Undo on score edit & auto-select number for quick typing
                 input.addEventListener('focus', function() {
                     window.preScoreEditSnapshot = JSON.stringify(mockCandidates || []);
                     try { this.select(); } catch(e) {}
@@ -3778,7 +4179,6 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                         } catch(e) {}
                         window.preScoreEditSnapshot = null;
                     }
-                    // Auto-save promptly on input blur if user made edits
                     if (window.dirtyCandidateIds && window.dirtyCandidateIds.size > 0) {
                         if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
                         autoSaveDebounceTimer = setTimeout(() => {
@@ -3787,9 +4187,7 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                     }
                 });
 
-                // 3. Calculation logic
                 input.addEventListener('input', function() {
-                    // កំណត់ពិន្ទុមិនឱ្យលើសពីអតិបរមាតាមមុខវិជ្ជា
                     const colIdx = parseInt(this.getAttribute('data-col'));
                     const maxScoreForCol = currentExamKey === 'outstanding' ? 100 : (maxScores[colIdx] || 100);
                     
@@ -3800,164 +4198,379 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
                     }
 
                     const row = this.closest('tr');
-                    const scores = row.querySelectorAll('input[type="number"]');
-                    
-                    // The nth-child differs based on whether it's outstanding or test1
-                    const totalCell = currentExamKey === 'outstanding' ? row.querySelector('td:nth-child(10)') : row.querySelector('td:nth-child(14)');
-                    const resultCell = currentExamKey === 'outstanding' ? row.querySelector('td:nth-child(11)') : row.querySelector('td:nth-child(15)');
-                    const mentionCell = currentExamKey === 'outstanding' ? row.querySelector('td:nth-child(12)') : row.querySelector('td:nth-child(16)');
-                    const nameCell = row.querySelector('td:nth-child(3)');
-                    const nameSpan = row.querySelector('.candidate-name-wrap') || nameCell;
-                    const strikeTargets = row.querySelectorAll('.failed-candidate-target');
-                    const updateRowStrike = (isFailed) => {
-                        if (currentExamKey === 'test1') {
-                            row.classList.toggle('fail-row', isFailed);
-                        }
-                        strikeTargets.forEach(el => {
-                            if (isFailed) {
-                                el.classList.add('failed-candidate-strike');
-                            } else {
-                                el.classList.remove('failed-candidate-strike', 'line-through', 'text-red-600');
-                            }
-                        });
-                        if (nameCell) {
-                            if (isFailed) nameCell.classList.add('text-red-600');
-                            else nameCell.classList.remove('line-through', 'text-red-600');
-                        }
-                    };
-                    
-                    let total = 0;
-                    let hasValue = false;
-                    for(let i=0; i<scores.length; i++) {
-                        if (scores[i] && scores[i].value !== '') {
-                            let val = parseInt(scores[i].value);
-                            if (!isNaN(val)) {
-                                total += val;
-                                hasValue = true;
-                            }
-                        }
-                    }
-                    
-                    // Save to global state so Dashboard can read it
                     const rowIndex = Array.from(this.closest('tbody').children).indexOf(row);
                     const currentCandidate = filtered[rowIndex];
-                    
-                    if (currentCandidate) {
-                        const cId = getCandidateKey(currentCandidate);
-                        currentCandidate.id = cId;
-                        if (!window.dirtyCandidateIds) window.dirtyCandidateIds = new Set();
-                        window.dirtyCandidateIds.add(cId);
+                    if (!currentCandidate) return;
 
-                        for(let i=0; i<scores.length; i++) {
-                            currentCandidate[`score${i+1}`] = (scores[i] && scores[i].value !== '') ? parseInt(scores[i].value) : undefined;
-                        }
-                        currentCandidate.total = total;
-                        currentCandidate._updatedAt = new Date().toISOString();
-                        
-                        let mention = '';
-                        if (hasValue) {
-                            if (currentExamKey === 'outstanding') {
-                                if (total >= 170) mention = 'A';
-                                else if (total >= 150) mention = 'B';
-                                else if (total >= 130) mention = 'C';
-                                else if (total >= 110) mention = 'D';
-                                else if (total >= 100) mention = 'E';
-                                else mention = 'F';
-                                
-                                if (total >= 100) {
-                                    if (currentCandidate) currentCandidate.passed = true;
-                                    if (resultCell) {
-                                        resultCell.textContent = 'ជាប់';
-                                        resultCell.className = 'border border-black px-2 py-1 text-center font-bold text-green-600';
-                                    }
-                                    updateRowStrike(false);
-                                } else {
-                                    if (currentCandidate) currentCandidate.passed = false;
-                                    if (resultCell) {
-                                        resultCell.textContent = 'ធ្លាក់';
-                                        resultCell.className = 'border border-black px-2 py-1 text-center font-bold text-red-600';
-                                    }
-                                    updateRowStrike(true);
-                                }
-                            } else {
-                                if (total >= 427) mention = 'A';
-                                else if (total >= 380) mention = 'B';
-                                else if (total >= 332) mention = 'C';
-                                else if (total >= 285) mention = 'D';
-                                else if (total >= 237) mention = 'E';
-                                else mention = 'F';
-                                
-                                if (total >= 237) {
-                                    if (currentCandidate) currentCandidate.passed = true;
-                                    if (resultCell) {
-                                        resultCell.textContent = 'ជាប់';
-                                        resultCell.className = 'border border-black px-2 py-1 text-center font-bold text-green-600';
-                                    }
-                                    updateRowStrike(false);
-                                } else {
-                                    if (currentCandidate) currentCandidate.passed = false;
-                                    if (resultCell) {
-                                        resultCell.textContent = 'ធ្លាក់';
-                                        resultCell.className = 'border border-black px-2 py-1 text-center font-bold text-red-600';
-                                    }
-                                    updateRowStrike(true);
-                                }
-                            }
-                        }
-                        currentCandidate.mention = mention;
-                    }
-                    
-                    if (hasValue) {
-                        if (totalCell) totalCell.textContent = total;
-                        const passThreshold = currentExamKey === 'outstanding' ? 100 : 237;
-                        if (total >= passThreshold) {
-                            if (currentCandidate) currentCandidate.passed = true;
-                            if (resultCell) {
-                                resultCell.textContent = 'ជាប់';
-                                resultCell.classList.add('text-green-600', 'font-bold');
-                                resultCell.classList.remove('text-red-600');
-                            }
-                            updateRowStrike(false);
-                            if (mentionCell) {
-                                mentionCell.textContent = currentCandidate ? currentCandidate.mention : '';
-                                const m = currentCandidate ? currentCandidate.mention : '';
-                                const mColor = m === 'A' ? 'text-blue-600' : m === 'B' ? 'text-green-600' : m === 'C' ? 'text-yellow-600' : m === 'D' ? 'text-orange-500' : m === 'E' ? 'text-purple-600' : m === 'F' ? 'text-red-600' : 'text-gray-800';
-                                mentionCell.className = `border border-black px-2 py-1 text-center font-bold ${mColor}`;
-                            }
-                        } else {
-                            if (currentCandidate) currentCandidate.passed = false;
-                            if (resultCell) {
-                                resultCell.textContent = 'ធ្លាក់';
-                                resultCell.classList.add('text-red-600', 'font-bold');
-                                resultCell.classList.remove('text-green-600');
-                            }
-                            updateRowStrike(true);
-                            if (mentionCell) {
-                                mentionCell.textContent = currentCandidate ? currentCandidate.mention : '';
-                                const m = currentCandidate ? currentCandidate.mention : '';
-                                const mColor = m === 'A' ? 'text-blue-600' : m === 'B' ? 'text-green-600' : m === 'C' ? 'text-yellow-600' : m === 'D' ? 'text-orange-500' : m === 'E' ? 'text-purple-600' : m === 'F' ? 'text-red-600' : 'text-gray-800';
-                                mentionCell.className = `border border-black px-2 py-1 text-center font-bold ${mColor}`;
-                            }
-                        }
-                    } else {
-                        if (currentCandidate) {
-                            currentCandidate.passed = undefined;
-                            currentCandidate.mention = '';
-                            currentCandidate._updatedAt = new Date().toISOString();
-                            const cId = getCandidateKey(currentCandidate);
-                            currentCandidate.id = cId;
-                            if (!window.dirtyCandidateIds) window.dirtyCandidateIds = new Set();
-                            window.dirtyCandidateIds.add(cId);
-                        }
-                        totalCell.textContent = '';
-                        resultCell.textContent = '';
-                        mentionCell.textContent = '';
-                        updateRowStrike(false);
-                    }
-                    // Auto-save the score debounced for concurrent multi-user safety
-                    triggerAutoSaveDebounced();
+                    syncCandidateScore(currentCandidate, colIdx, this.value, 'desktop');
                 });
             });
+
+            // ==================== 2. MOBILE PHONE MODE RENDERING ====================
+            const mobilePills = document.getElementById('mobileSubjectPills');
+            if (mobilePills) {
+                let pillsHtml = `
+                    <button type="button" onclick="setMobileFocusedSubject('all')" data-col="all" class="mobile-subject-pill shrink-0 px-3 py-1 rounded-full text-xs ${window.activeMobileFocusedSubject === 'all' ? 'bg-blue-600 text-white font-bold shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} transition cursor-pointer">
+                        🌟 គ្រប់មុខវិជ្ជា
+                    </button>
+                `;
+                subjectNames.forEach((sName, colIdx) => {
+                    const isActive = String(window.activeMobileFocusedSubject) === String(colIdx);
+                    pillsHtml += `
+                        <button type="button" onclick="setMobileFocusedSubject(${colIdx})" data-col="${colIdx}" class="mobile-subject-pill shrink-0 px-3 py-1 rounded-full text-xs ${isActive ? 'bg-blue-600 text-white font-bold shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'} transition cursor-pointer">
+                            ${sName} (${maxScores[colIdx]})
+                        </button>
+                    `;
+                });
+                mobilePills.innerHTML = pillsHtml;
+            }
+
+            // A. Candidate Cards List
+            const cardsContainer = document.getElementById('mobileCardsContainer');
+            if (cardsContainer) {
+                cardsContainer.innerHTML = '';
+                if (filtered.length === 0) {
+                    cardsContainer.innerHTML = '<div class="text-center py-8 text-gray-400 bg-white rounded-xl border border-gray-200 text-sm">មិនមានទិន្នន័យបេក្ខជនក្នុងបន្ទប់នេះទេ</div>';
+                } else {
+                    filtered.forEach((c, index) => {
+                        const card = document.createElement('div');
+                        const isFailed = (currentExamKey === 'test1' && c.passed === false);
+                        const m = c.mention;
+                        const mColor = m === 'A' ? 'text-blue-600 bg-blue-50 border-blue-200' : m === 'B' ? 'text-green-600 bg-green-50 border-green-200' : m === 'C' ? 'text-yellow-600 bg-yellow-50 border-yellow-200' : m === 'D' ? 'text-orange-500 bg-orange-50 border-orange-200' : m === 'E' ? 'text-purple-600 bg-purple-50 border-purple-200' : m === 'F' ? 'text-red-600 bg-red-50 border-red-200' : 'text-gray-500 bg-gray-50 border-gray-200';
+                        const resultBadgeClass = c.passed === true ? 'text-green-700 bg-green-100 border-green-300' : (c.passed === false ? 'text-red-700 bg-red-100 border-red-300' : 'text-gray-500 bg-gray-100 border-gray-200');
+                        const resultText = c.passed === true ? 'ជាប់' : (c.passed === false ? 'ធ្លាក់' : '-');
+                        
+                        card.className = `candidate-mobile-card bg-white rounded-xl border ${isFailed ? 'border-red-300 bg-red-50/15' : 'border-gray-200'} p-3 shadow-sm transition hover:shadow`;
+                        card.setAttribute('data-seat', String(c.seat || '').trim());
+                        card.setAttribute('data-name', String(c.name || '').trim());
+                        card.setAttribute('data-cand-key', getCandidateKey(c));
+
+                        let subjectsHtml = '';
+                        subjectNames.forEach((sName, colIdx) => {
+                            const val = c[`score${colIdx+1}`] !== undefined ? c[`score${colIdx+1}`] : '';
+                            const isFocused = String(window.activeMobileFocusedSubject) === String(colIdx);
+                            subjectsHtml += `
+                                <div class="subject-input-box bg-gray-50 p-1.5 rounded-lg border border-gray-200 focus-within:border-blue-500 focus-within:bg-blue-50/50 focus-within:ring-2 focus-within:ring-blue-300 transition ${isFocused ? 'ring-2 ring-blue-500 bg-blue-50/50' : ''}" data-col="${colIdx}">
+                                    <div class="flex items-center justify-between text-[11px] font-semibold text-gray-600 mb-1">
+                                        <span class="truncate">${sName}</span>
+                                        <span class="text-[9.5px] text-gray-400 font-normal">/${maxScores[colIdx]}</span>
+                                    </div>
+                                    <input type="number" inputmode="decimal" min="0" max="${maxScores[colIdx]}" data-col="${colIdx}" value="${val}" class="mobile-card-score-input w-full h-10 text-center font-bold text-base bg-white border border-gray-300 rounded-md text-gray-800 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-500" ${getCurrentUserRole() === "viewer" ? "readonly" : ""}>
+                                </div>
+                            `;
+                        });
+
+                        card.innerHTML = `
+                            <div class="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-gray-100">
+                                <div class="flex items-center gap-2 min-w-0">
+                                    <span class="shrink-0 bg-blue-600 text-white font-bold text-xs px-2.5 py-1 rounded-md shadow-xs">តុ ${String(c.seat || '').trim()}</span>
+                                    <div class="min-w-0">
+                                        <h4 class="card-candidate-name font-bold text-gray-900 text-sm truncate font-moul leading-snug ${isFailed ? 'text-red-600 line-through' : ''}">${c.name}</h4>
+                                        <div class="text-[11px] text-gray-500 flex items-center gap-1.5 mt-0.5">
+                                            <span>${c.gender === 'F' ? 'ស្រី' : 'ប្រុស'}</span>
+                                            <span>•</span>
+                                            <span class="truncate max-w-[90px]">${c.school || ''}</span>
+                                            <span>•</span>
+                                            <span class="px-1.5 py-0.2 rounded text-[10px] font-semibold bg-amber-100 text-amber-800">${c.subject || ''}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 text-right">
+                                    <div class="text-xs font-bold text-blue-800 mb-0.5">
+                                        សរុប៖ <span class="card-total-badge text-sm font-extrabold text-blue-900">${c.total !== undefined && !isNaN(c.total) ? c.total : '-'}</span>
+                                    </div>
+                                    <div class="flex items-center justify-end gap-1">
+                                        <span class="card-result-badge text-[11px] font-bold px-2 py-0.5 rounded border ${resultBadgeClass}">${resultText}</span>
+                                        <span class="card-mention-badge text-[11px] font-bold px-2 py-0.5 rounded border ${mColor}">${c.mention || '-'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                ${subjectsHtml}
+                            </div>
+                        `;
+                        cardsContainer.appendChild(card);
+                    });
+
+                    // Add listeners for Card inputs
+                    cardsContainer.querySelectorAll('.mobile-card-score-input').forEach(input => {
+                        input.addEventListener('focus', function() {
+                            try { this.select(); } catch(e) {}
+                        });
+                        input.addEventListener('input', function() {
+                            const card = this.closest('.candidate-mobile-card');
+                            const candKey = card.getAttribute('data-cand-key');
+                            const cand = filtered.find(c => getCandidateKey(c) === candKey);
+                            const colIdx = parseInt(this.getAttribute('data-col'));
+                            if (cand) syncCandidateScore(cand, colIdx, this.value, 'mobile-card');
+                        });
+                        input.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                const card = this.closest('.candidate-mobile-card');
+                                const colIdx = parseInt(this.getAttribute('data-col'));
+                                const allCards = Array.from(cardsContainer.querySelectorAll('.candidate-mobile-card')).filter(c => c.style.display !== 'none');
+                                const cardIdx = allCards.indexOf(card);
+
+                                if (window.activeMobileFocusedSubject !== 'all' && window.activeMobileFocusedSubject !== null) {
+                                    if (cardIdx < allCards.length - 1) {
+                                        const nextInput = allCards[cardIdx + 1].querySelector(`.mobile-card-score-input[data-col="${colIdx}"]`);
+                                        if (nextInput) {
+                                            nextInput.focus();
+                                            try { nextInput.select(); } catch(err) {}
+                                            nextInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }
+                                    }
+                                } else {
+                                    const cardInputs = Array.from(card.querySelectorAll('.mobile-card-score-input'));
+                                    const inputIdx = cardInputs.indexOf(this);
+                                    if (inputIdx < cardInputs.length - 1) {
+                                        cardInputs[inputIdx + 1].focus();
+                                        try { cardInputs[inputIdx + 1].select(); } catch(err) {}
+                                    } else if (cardIdx < allCards.length - 1) {
+                                        const nextCardInputs = allCards[cardIdx + 1].querySelectorAll('.mobile-card-score-input');
+                                        if (nextCardInputs.length > 0) {
+                                            nextCardInputs[0].focus();
+                                            try { nextCardInputs[0].select(); } catch(err) {}
+                                            nextCardInputs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                        input.addEventListener('blur', function() {
+                            if (window.dirtyCandidateIds && window.dirtyCandidateIds.size > 0) {
+                                if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
+                                autoSaveDebounceTimer = setTimeout(() => saveCandidates(true), 300);
+                            }
+                        });
+                    });
+                }
+            }
+
+            // B. Alternative Scrollable Table
+            const mobileThead = document.getElementById('mobileThead');
+            const mobileTableBody = document.getElementById('mobileTableBody');
+            if (mobileThead && mobileTableBody) {
+                let theadHtml = `
+                    <tr class="font-bold text-[11px] border-b border-gray-300">
+                        <th class="mobile-sticky-seat p-2 text-center border-r border-gray-200">តុ</th>
+                        <th class="mobile-sticky-name p-2 text-left border-r border-gray-200 min-w-[120px]">ឈ្មោះ</th>
+                `;
+                subjectNames.forEach((sName, colIdx) => {
+                    theadHtml += `<th class="p-1.5 text-center border-r border-gray-200 min-w-[55px]">${sName}</th>`;
+                });
+                theadHtml += `
+                        <th class="p-1.5 text-center bg-blue-50 text-blue-800 border-r border-gray-200 min-w-[50px]">សរុប</th>
+                        <th class="p-1.5 text-center bg-green-50 text-green-800 border-r border-gray-200 min-w-[45px]">លទ្ធផល</th>
+                        <th class="p-1.5 text-center bg-purple-50 text-purple-800 min-w-[40px]">និទ្ទេស</th>
+                    </tr>
+                `;
+                mobileThead.innerHTML = theadHtml;
+
+                mobileTableBody.innerHTML = '';
+                filtered.forEach((c, index) => {
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-gray-200 hover:bg-gray-50';
+                    tr.setAttribute('data-seat', String(c.seat || '').trim());
+                    tr.setAttribute('data-name', String(c.name || '').trim());
+                    tr.setAttribute('data-cand-key', getCandidateKey(c));
+
+                    const isFailed = (currentExamKey === 'test1' && c.passed === false);
+                    let subInputs = '';
+                    subjectNames.forEach((sName, colIdx) => {
+                        const val = c[`score${colIdx+1}`] !== undefined ? c[`score${colIdx+1}`] : '';
+                        subInputs += `
+                            <td class="p-1 text-center border-r border-gray-200">
+                                <input type="number" inputmode="decimal" min="0" max="${maxScores[colIdx]}" data-col="${colIdx}" value="${val}" class="mobile-table-score-input w-12 h-8 text-center font-bold text-xs border border-gray-300 rounded focus:border-blue-600 focus:outline-none" ${getCurrentUserRole() === "viewer" ? "readonly" : ""}>
+                            </td>
+                        `;
+                    });
+
+                    tr.innerHTML = `
+                        <td class="mobile-sticky-seat p-1.5 text-center font-bold border-r border-gray-200">${String(c.seat || '').trim()}</td>
+                        <td class="mobile-sticky-name p-1.5 font-bold border-r border-gray-200 truncate max-w-[130px] ${isFailed ? 'text-red-600 line-through' : ''}">${c.name}</td>
+                        ${subInputs}
+                        <td class="p-1.5 text-center font-bold text-blue-900 border-r border-gray-200 m-total-cell">${c.total !== undefined && !isNaN(c.total) ? c.total : '-'}</td>
+                        <td class="p-1.5 text-center font-bold border-r border-gray-200 m-result-cell ${c.passed ? 'text-green-600' : (c.passed === false ? 'text-red-600' : '')}">${c.passed ? 'ជាប់' : (c.passed === false ? 'ធ្លាក់' : '-')}</td>
+                        <td class="p-1.5 text-center font-bold m-mention-cell">${c.mention || '-'}</td>
+                    `;
+                    mobileTableBody.appendChild(tr);
+                });
+
+                mobileTableBody.querySelectorAll('.mobile-table-score-input').forEach(input => {
+                    input.addEventListener('focus', function() {
+                        try { this.select(); } catch(e) {}
+                    });
+                    input.addEventListener('input', function() {
+                        const tr = this.closest('tr');
+                        const candKey = tr.getAttribute('data-cand-key');
+                        const cand = filtered.find(c => getCandidateKey(c) === candKey);
+                        const colIdx = parseInt(this.getAttribute('data-col'));
+                        if (cand) syncCandidateScore(cand, colIdx, this.value, 'mobile-table');
+                    });
+                    input.addEventListener('blur', function() {
+                        if (window.dirtyCandidateIds && window.dirtyCandidateIds.size > 0) {
+                            if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
+                            autoSaveDebounceTimer = setTimeout(() => saveCandidates(true), 300);
+                        }
+                    });
+                });
+            }
+
+            // Sync Mobile Stats
+            updateMobileStats(filtered, roomNumber);
+
+            // Re-apply any active search filter
+            if (window.mobileSearchFilterQuery) {
+                filterMobileCandidates(window.mobileSearchFilterQuery);
+            }
+
+            // Centralized Candidate Score Sync
+            function syncCandidateScore(cand, colIdx, rawVal, source) {
+                const maxColScore = currentExamKey === 'outstanding' ? 100 : (maxScores[colIdx] || 100);
+                let numVal = rawVal !== '' ? parseInt(rawVal) : undefined;
+                if (numVal !== undefined) {
+                    if (isNaN(numVal) || numVal < 0) numVal = 0;
+                    if (numVal > maxColScore) numVal = maxColScore;
+                }
+
+                cand[`score${colIdx+1}`] = numVal;
+                cand.id = getCandidateKey(cand);
+                cand._updatedAt = new Date().toISOString();
+
+                if (!window.dirtyCandidateIds) window.dirtyCandidateIds = new Set();
+                window.dirtyCandidateIds.add(cand.id);
+
+                // Recalculate candidate total
+                let total = 0;
+                let hasValue = false;
+                for (let i = 1; i <= 7; i++) {
+                    if (cand[`score${i}`] !== undefined && !isNaN(cand[`score${i}`])) {
+                        total += cand[`score${i}`];
+                        hasValue = true;
+                    }
+                }
+                cand.total = hasValue ? total : undefined;
+
+                const passThreshold = currentExamKey === 'outstanding' ? 100 : 237;
+                if (hasValue) {
+                    cand.passed = (total >= passThreshold);
+                    let mention = '';
+                    if (currentExamKey === 'outstanding') {
+                        if (total >= 170) mention = 'A';
+                        else if (total >= 150) mention = 'B';
+                        else if (total >= 130) mention = 'C';
+                        else if (total >= 110) mention = 'D';
+                        else if (total >= 100) mention = 'E';
+                        else mention = 'F';
+                    } else {
+                        if (total >= 427) mention = 'A';
+                        else if (total >= 380) mention = 'B';
+                        else if (total >= 332) mention = 'C';
+                        else if (total >= 285) mention = 'D';
+                        else if (total >= 237) mention = 'E';
+                        else mention = 'F';
+                    }
+                    cand.mention = mention;
+                } else {
+                    cand.passed = undefined;
+                    cand.mention = '';
+                }
+
+                const candKey = cand.id;
+
+                // Update Mobile Card View
+                const card = document.querySelector(`.candidate-mobile-card[data-cand-key="${candKey}"]`);
+                if (card) {
+                    const cardInput = card.querySelector(`.mobile-card-score-input[data-col="${colIdx}"]`);
+                    if (cardInput && source !== 'mobile-card') {
+                        cardInput.value = numVal !== undefined ? numVal : '';
+                    }
+                    const totBadge = card.querySelector('.card-total-badge');
+                    if (totBadge) totBadge.textContent = cand.total !== undefined ? cand.total : '-';
+
+                    const resBadge = card.querySelector('.card-result-badge');
+                    if (resBadge) {
+                        resBadge.textContent = cand.passed === true ? 'ជាប់' : (cand.passed === false ? 'ធ្លាក់' : '-');
+                        resBadge.className = `card-result-badge text-[11px] font-bold px-2 py-0.5 rounded border ${cand.passed === true ? 'text-green-700 bg-green-100 border-green-300' : (cand.passed === false ? 'text-red-700 bg-red-100 border-red-300' : 'text-gray-500 bg-gray-100 border-gray-200')}`;
+                    }
+
+                    const menBadge = card.querySelector('.card-mention-badge');
+                    if (menBadge) {
+                        menBadge.textContent = cand.mention || '-';
+                        const m = cand.mention;
+                        const mColor = m === 'A' ? 'text-blue-600 bg-blue-50 border-blue-200' : m === 'B' ? 'text-green-600 bg-green-50 border-green-200' : m === 'C' ? 'text-yellow-600 bg-yellow-50 border-yellow-200' : m === 'D' ? 'text-orange-500 bg-orange-50 border-orange-200' : m === 'E' ? 'text-purple-600 bg-purple-50 border-purple-200' : m === 'F' ? 'text-red-600 bg-red-50 border-red-200' : 'text-gray-500 bg-gray-50 border-gray-200';
+                        menBadge.className = `card-mention-badge text-[11px] font-bold px-2 py-0.5 rounded border ${mColor}`;
+                    }
+
+                    const nameEl = card.querySelector('.card-candidate-name');
+                    if (nameEl) {
+                        nameEl.classList.toggle('line-through', cand.passed === false);
+                        nameEl.classList.toggle('text-red-600', cand.passed === false);
+                    }
+                    card.classList.toggle('border-red-300', cand.passed === false);
+                    card.classList.toggle('bg-red-50/15', cand.passed === false);
+                }
+
+                // Update Mobile Table View
+                const mRow = document.querySelector(`#mobileTableBody tr[data-cand-key="${candKey}"]`);
+                if (mRow) {
+                    const mInput = mRow.querySelector(`.mobile-table-score-input[data-col="${colIdx}"]`);
+                    if (mInput && source !== 'mobile-table') {
+                        mInput.value = numVal !== undefined ? numVal : '';
+                    }
+                    const mTot = mRow.querySelector('.m-total-cell');
+                    if (mTot) mTot.textContent = cand.total !== undefined ? cand.total : '-';
+                    const mRes = mRow.querySelector('.m-result-cell');
+                    if (mRes) {
+                        mRes.textContent = cand.passed === true ? 'ជាប់' : (cand.passed === false ? 'ធ្លាក់' : '-');
+                        mRes.className = `p-1.5 text-center font-bold border-r border-gray-200 m-result-cell ${cand.passed === true ? 'text-green-600' : (cand.passed === false ? 'text-red-600' : '')}`;
+                    }
+                    const mMen = mRow.querySelector('.m-mention-cell');
+                    if (mMen) mMen.textContent = cand.mention || '-';
+                    const mName = mRow.querySelector('.mobile-sticky-name');
+                    if (mName) {
+                        mName.classList.toggle('line-through', cand.passed === false);
+                        mName.classList.toggle('text-red-600', cand.passed === false);
+                    }
+                }
+
+                // Update Desktop Table View
+                const deskRow = document.querySelector(`#scoreTableBody tr[data-cand-key="${candKey}"]`);
+                if (deskRow) {
+                    const deskInputs = deskRow.querySelectorAll('input.score-input');
+                    if (deskInputs[colIdx] && source !== 'desktop') {
+                        deskInputs[colIdx].value = numVal !== undefined ? numVal : '';
+                    }
+                    const totalCell = currentExamKey === 'outstanding' ? deskRow.querySelector('td:nth-child(10)') : deskRow.querySelector('td:nth-child(14)');
+                    const resultCell = currentExamKey === 'outstanding' ? deskRow.querySelector('td:nth-child(11)') : deskRow.querySelector('td:nth-child(15)');
+                    const mentionCell = currentExamKey === 'outstanding' ? deskRow.querySelector('td:nth-child(12)') : deskRow.querySelector('td:nth-child(16)');
+                    if (totalCell) totalCell.textContent = cand.total !== undefined ? cand.total : '';
+                    if (resultCell) {
+                        resultCell.textContent = cand.passed === true ? 'ជាប់' : (cand.passed === false ? 'ធ្លាក់' : '');
+                        resultCell.className = `border border-black align-middle px-2 py-0 text-center font-bold ${cand.passed === true ? 'text-green-600' : (cand.passed === false ? 'text-red-600' : '')}`;
+                    }
+                    if (mentionCell) {
+                        mentionCell.textContent = cand.mention || '';
+                        const m = cand.mention;
+                        const mColor = m === 'A' ? 'text-blue-600' : m === 'B' ? 'text-green-600' : m === 'C' ? 'text-yellow-600' : m === 'D' ? 'text-orange-500' : m === 'E' ? 'text-purple-600' : m === 'F' ? 'text-red-600' : 'text-gray-800';
+                        mentionCell.className = `border border-black align-middle px-2 py-0 text-center font-bold ${mColor}`;
+                    }
+                    const strikeTargets = deskRow.querySelectorAll('.failed-candidate-target');
+                    strikeTargets.forEach(el => {
+                        if (cand.passed === false) el.classList.add('failed-candidate-strike');
+                        else el.classList.remove('failed-candidate-strike');
+                    });
+                    deskRow.classList.toggle('fail-row', cand.passed === false);
+                }
+
+                // Update Mobile Stats
+                updateMobileStats(filtered, roomNumber);
+
+                // Debounced Auto-Save
+                triggerAutoSaveDebounced();
+            }
         }
 
         // មុខងារសម្រាប់បញ្ជីជ័យលាភី Top 3
@@ -3967,22 +4580,7 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
             document.getElementById('resultEmptyState').classList.remove('hidden');
         }
 
-        function showScoreInput() {
-            const top3 = document.getElementById('resultTop3State');
-            if (top3) top3.classList.add('hidden');
-            const emptyState = document.getElementById('resultEmptyState');
-            if (emptyState) emptyState.classList.add('hidden');
-            const inputState = document.getElementById('resultInputState');
-            if (inputState) inputState.classList.remove('hidden');
-            setPrintOrientation('landscape');
-            
-            const currentRoom = document.getElementById('scoreRoomFilter')?.value || localStorage.getItem('last_selected_score_room') || '១';
-            const roomEl = document.getElementById('scoreRoomFilter');
-            if (roomEl && roomEl.value !== currentRoom) roomEl.value = currentRoom;
-            filterScoreRoom(currentRoom);
-        }
-
-        function showTop3State() {
+function showTop3State() {
             if (isUserMode()) return;
             document.getElementById('resultEmptyState').classList.add('hidden');
             document.getElementById('resultInputState').classList.add('hidden');
@@ -4986,6 +5584,7 @@ if (window.embeddedExamData && window.embeddedExamData['schoolExamCandidates']) 
 
             // Initialize User Role & Access Controls
             updateRoleUI();
+            if (typeof initScreenMode === 'function') initScreenMode();
 
             // Restore last active exam
             const savedExam = localStorage.getItem('school_active_exam_key') || 'test1';
