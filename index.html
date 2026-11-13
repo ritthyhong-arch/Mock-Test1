@@ -908,10 +908,16 @@
                                                 <option value="៥">បន្ទប់លេខ ៥</option>
                                             </select>
                                         </div>
-                                        <button onclick="toggleScreenMode()" class="shrink-0 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition shadow-sm cursor-pointer" title="ប្តូរទៅរបៀបកុំព្យូទ័រ">
-                                            <i class="fas fa-desktop text-blue-600"></i>
-                                            <span>💻 របៀប PC</span>
-                                        </button>
+                                        <div class="flex items-center gap-1.5 shrink-0">
+                                            <button onclick="toggleScreenMode()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition shadow-sm cursor-pointer" title="ប្តូរទៅរបៀបកុំព្យូទ័រ">
+                                                <i class="fas fa-desktop text-blue-600"></i>
+                                                <span>💻 របៀប PC</span>
+                                            </button>
+                                            <button onclick="forceSyncFromCloud()" class="bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-300 text-xs px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1 transition shadow-sm cursor-pointer" title="ទាញទិន្នន័យថ្មីបំផុតពី Supabase Cloud">
+                                                <i class="fas fa-sync-alt text-sky-600"></i>
+                                                <span>🔄 Update</span>
+                                            </button>
+                                        </div>
                                     </div>
 
                                     <!-- Row 2: Search Candidate & Count Badge -->
@@ -5452,43 +5458,31 @@ function showTop3State() {
                 }
             }
 
-            // 3. Fallback to Server API if running locally (only if not userCleared)
-            if (!loaded && !userCleared && localStr !== '[]') {
-                try {
-                    const apiBase = window.location.protocol.startsWith('http') ? '' : 'http://localhost:8080';
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => controller.abort(), 600);
-                    const res = await fetch(apiBase + '/api/data?key=' + encodeURIComponent(config.storageKey), {
-                        signal: controller.signal
-                    });
-                    clearTimeout(timeoutId);
-                    if (res.ok) {
-                        const diskJson = await res.json();
-                        if (diskJson && Array.isArray(diskJson) && diskJson.length > 0) {
-                            loaded = applyCandidatesData(diskJson);
-                            try { localStorage.setItem(config.storageKey, JSON.stringify(mockCandidates)); } catch(e) {}
-                        }
-                    }
-                } catch(e) {}
-            }
-
-            // 4. SUPABASE CLOUD SYNC: Seamless background synchronization without UI block
+            // 3. SUPABASE CLOUD SYNC: Seamless background synchronization
             try {
                 const cloudResult = await fetchFromSupabase(config.storageKey);
                 if (cloudResult && cloudResult.data && Array.isArray(cloudResult.data)) {
                     const cloudTime = cloudResult.updated_at ? new Date(cloudResult.updated_at).getTime() : 0;
+                    
                     if (userCleared && localTime >= cloudTime) {
                         // User cleared locally more recently than cloud state; preserve empty state and sync to cloud
                         if (cloudResult.data.length > 0) {
                             await saveToSupabase(config.storageKey, [], new Date().toISOString());
                         }
                     } else if (cloudResult.data.length > 0) {
-                        if (mockCandidates && mockCandidates.length > 0) {
+                        const isDirtySession = window.dirtyCandidateIds && window.dirtyCandidateIds.size > 0;
+                        
+                        // CRITICAL: If Cloud was updated by Admin more recently than local cache and user is not currently mid-typing,
+                        // Cloud state ALWAYS wins to prevent stale test scores from persisting on phones!
+                        if (cloudTime > localTime && !isDirtySession) {
+                            applyCandidatesData(cloudResult.data);
+                        } else if (loaded && mockCandidates && mockCandidates.length > 0) {
                             mockCandidates = mergeCandidates(mockCandidates, cloudResult.data, window.dirtyCandidateIds || new Set());
                             applyCandidatesData(mockCandidates);
                         } else {
                             applyCandidatesData(cloudResult.data);
                         }
+                        
                         try {
                             localStorage.setItem(config.storageKey, JSON.stringify(mockCandidates));
                             if (cloudResult.updated_at) {
@@ -5507,7 +5501,7 @@ function showTop3State() {
                 saveCandidates(true);
             }
 
-            // 5. If no candidates found anywhere, show empty state
+            // 4. If no candidates found anywhere, show empty state
             if (!mockCandidates || mockCandidates.length === 0) {
                 mockCandidates = [];
                 resetAllUI();
@@ -6082,6 +6076,32 @@ function showTop3State() {
                 }
             }
         }
+
+        
+        async function forceSyncFromCloud() {
+            showToast('កំពុងទាញទិន្នន័យចុងក្រោយពី Cloud...', 'info');
+            const storageKey = examConfigs[currentExamKey]?.storageKey || 'schoolExamCandidates_test1';
+            try {
+                localStorage.removeItem(storageKey);
+                localStorage.removeItem(storageKey + '_updated_at');
+                localStorage.removeItem(storageKey + '_user_cleared');
+                if (window.dirtyCandidateIds) window.dirtyCandidateIds.clear();
+            } catch(e) {}
+            
+            await loadExamData();
+            
+            // Re-render score table for current selected room
+            try {
+                const roomSelect = document.getElementById('mobileScoreRoomFilter') || document.getElementById('scoreRoomFilter');
+                const curRoom = roomSelect ? roomSelect.value : '១';
+                if (typeof filterScoreRoom === 'function') {
+                    filterScoreRoom(curRoom);
+                }
+            } catch(e) {}
+            
+            showToast('បានទាញទិន្នន័យថ្មីបំផុតពី Cloud រួចរាល់!', 'success');
+        }
+        window.forceSyncFromCloud = forceSyncFromCloud;
 
         // Close admin modal on outside click
         window.addEventListener('click', function(e) {
