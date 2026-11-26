@@ -497,6 +497,12 @@
                                     <div id="autoSaveIndicator" class="hidden items-center px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-semibold border border-green-200 shadow-sm">
                                         <span id="autoSaveText"><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>បានរក្សាទុកស្វ័យប្រវត្តិ</span>
                                     </div>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <i class="fas fa-calendar-alt text-indigo-200 group-hover:text-white transition"></i>
+                                        </div>
+                                        <input type="date" onchange="handleDateSelection(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 pl-9 rounded-lg transition shadow-sm text-sm cursor-pointer outline-none custom-date-input" style="color-scheme: dark;">
+                                    </div>
                                     <!-- Undo / Redo Buttons -->
                                     <button class="undo-btn bg-white hover:bg-gray-100 border border-gray-300 text-gray-700 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg transition shadow-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center" onclick="undoAction()" title="មិនធ្វើវិញ (Ctrl+Z)" disabled>
                                         <i class="fas fa-undo mr-1 text-gray-600"></i> មិនធ្វើវិញ
@@ -684,7 +690,12 @@
                                             <i class="fas fa-filter text-xs"></i>
                                         </div>
                                     </div>
-                                    <button class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="generateLunarDate()"><i class="fas fa-moon mr-1"></i> គណនាថ្ងៃខែចន្ទគតិ</button>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <i class="fas fa-calendar-alt text-indigo-200 group-hover:text-white transition"></i>
+                                        </div>
+                                        <input type="date" onchange="handleDateSelection(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 pl-9 rounded-lg transition shadow-sm text-sm cursor-pointer outline-none custom-date-input" style="color-scheme: dark;">
+                                    </div>
                                     <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="window.print()"><i class="fas fa-print mr-1"></i> បោះពុម្ព (Print)</button>
                                 </div>
                             </div>
@@ -778,6 +789,12 @@
                                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                                             <i class="fas fa-filter text-xs"></i>
                                         </div>
+                                    </div>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <i class="fas fa-calendar-alt text-indigo-200 group-hover:text-white transition"></i>
+                                        </div>
+                                        <input type="date" onchange="handleDateSelection(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 pl-9 rounded-lg transition shadow-sm text-sm cursor-pointer outline-none custom-date-input" style="color-scheme: dark;">
                                     </div>
                                     <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="window.print()"><i class="fas fa-print mr-1"></i> បោះពុម្ព (Print)</button>
                                 </div>
@@ -880,6 +897,12 @@
                                     <!-- Auto-Save status badge for Results scoring -->
                                     <div id="scoreAutoSaveIndicator" class="flex items-center px-3 py-1 rounded-lg bg-green-50 text-green-700 text-xs font-semibold border border-green-200 shadow-sm" title="ប្រព័ន្ធរក្សាទុកស្វ័យប្រវត្តិចូលទៅកាន់ Cloud រាល់ពេលវាយពិន្ទុ">
                                         <span id="scoreAutoSaveText"><span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>បានរក្សាទុកស្វ័យប្រវត្តិ</span>
+                                    </div>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <i class="fas fa-calendar-alt text-indigo-200 group-hover:text-white transition"></i>
+                                        </div>
+                                        <input type="date" onchange="handleDateSelection(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 pl-9 rounded-lg transition shadow-sm text-sm cursor-pointer outline-none custom-date-input" style="color-scheme: dark;">
                                     </div>
                                     <button class="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="saveCandidates(false)"><i class="fas fa-save mr-1"></i> រក្សាទុក</button>
                                     <button class="bg-blue-100 hover:bg-blue-200 text-black font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="showTop3State()"><i class="fas fa-medal mr-1"></i> លទ្ធផល</button>
@@ -1086,6 +1109,12 @@
                                         <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                                             <i class="fas fa-filter text-xs"></i>
                                         </div>
+                                    </div>
+                                    <div class="relative group">
+                                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                            <i class="fas fa-calendar-alt text-indigo-200 group-hover:text-white transition"></i>
+                                        </div>
+                                        <input type="date" onchange="handleDateSelection(this)" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 pl-9 rounded-lg transition shadow-sm text-sm cursor-pointer outline-none custom-date-input" style="color-scheme: dark;">
                                     </div>
                                     <button class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="showScoreInput()"><i class="fas fa-arrow-left mr-1"></i> ត្រឡប់ទៅបញ្ចូលពិន្ទុ</button>
                                     <button class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-4 py-2 rounded-lg transition shadow-sm text-sm" onclick="printTop3()"><i class="fas fa-print mr-1"></i> Print (A4)</button>
@@ -3020,6 +3049,17 @@
             if (top3LunarEl) {
                 top3LunarEl.textContent = getKhmerLunarDateString(date);
             }
+
+            // Initialize all date pickers with today's date if not set
+            try {
+                const yearStr = date.getFullYear();
+                const monthStr = String(date.getMonth() + 1).padStart(2, '0');
+                const dayStr = String(date.getDate()).padStart(2, '0');
+                const isoDate = `${yearStr}-${monthStr}-${dayStr}`;
+                document.querySelectorAll('.custom-date-input').forEach(inp => {
+                    if (!inp.value) inp.value = isoDate;
+                });
+            } catch(e) {}
         }
 
         // មុខងារបែងចែកបន្ទប់ស្វ័យប្រវត្តិ ព្រមទាំងបញ្ចូលថ្ងៃខែជាក់ស្តែង
@@ -6336,6 +6376,11 @@ function toKhmerNum(num) {
 
 function handleDateSelection(input) {
     if (!input.value) return;
+
+    // Sync all date pickers across tabs
+    document.querySelectorAll('.custom-date-input').forEach(inp => {
+        if (inp !== input) inp.value = input.value;
+    });
     
     const selectedDate = new Date(input.value);
     
