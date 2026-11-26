@@ -1151,10 +1151,11 @@
                                         </div>
 
                                         <!-- Right Column -->
-                                        <div class="text-center min-w-[270px]">
+                                        <div class="text-center min-w-[270px] space-y-1">
+                                            <p class="invisible select-none font-normal text-[12px]" style="font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 12px;">&nbsp;</p>
                                             <p id="top3LunarDateText" class="text-[12px] whitespace-nowrap cursor-pointer hover:bg-yellow-50 rounded px-1 transition" style="font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 12px;" title="ចុចដើម្បីកែប្រែកាលបរិច្ឆេទប្រសិនបើចាំបាច់" contenteditable="true">ថ្ងៃ ....................ខែ ........... ឆ្នាំ................ ព.ស............</p>
-                                            <p class="mt-0.5 text-[12px] whitespace-nowrap" style="font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 12px;">រាជធានីភ្នំពេញ <span id="top3KhmerSolarDateSignature" class="cursor-pointer hover:bg-yellow-50 rounded px-1 transition" style="font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 12px;" title="ចុចដើម្បីកែប្រែកាលបរិច្ឆេទប្រសិនបើចាំបាច់" contenteditable="true">ថ្ងៃទី ..... ខែ ......... ឆ្នាំ .............</span></p>
-                                            <p class="font-moul text-[14px] mt-2 pb-6">ប្រធានគណៈមេប្រយោគ</p>
+                                            <p class="text-[12px] whitespace-nowrap" style="font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 12px;">រាជធានីភ្នំពេញ <span id="top3KhmerSolarDateSignature" class="cursor-pointer hover:bg-yellow-50 rounded px-1 transition" style="font-family: 'Khmer OS Siemreap', 'Siemreap', sans-serif; font-size: 12px;" title="ចុចដើម្បីកែប្រែកាលបរិច្ឆេទប្រសិនបើចាំបាច់" contenteditable="true">ថ្ងៃទី ..... ខែ ......... ឆ្នាំ .............</span></p>
+                                            <p class="font-moul text-[14px] pb-6">ប្រធានគណៈមេប្រយោគ</p>
                                             <div class="top3-sign-space" style="height: 35px;"></div>
                                         </div>
                                     </div>
@@ -4980,11 +4981,10 @@ function showTop3State() {
             const femalePassedCount = finalResults.filter(item => item.candidate && (item.candidate.passed === true || item.candidate.result === 'ជាប់') && (item.candidate.gender === 'F' || item.candidate.gender === 'ស្រី')).length;
 
             excelData.push([]);
-            excelData.push([`បញ្ឈប់បញ្ជីត្រឹមចំនួន៖ ${toKhmerNum(totalCount)} នាក់ ស្រី ${toKhmerNum(femaleCount)} នាក់`]);
-            excelData.push([`ជាប់ជាស្ថាពរ ${hasScored ? toKhmerNum(passedCount) : '......'} នាក់ ក្នុងនោះស្រី ${hasScored ? toKhmerNum(femalePassedCount) : '......'} នាក់`]);
-            excelData.push(['ចុះហត្ថលេខាដោយ....................................', '', '', '', '', '', '', lunarDateText]);
-            excelData.push(['ផ្ទៀងផ្ទាត់ដោយ....................................', '', '', '', '', '', '', `រាជធានីភ្នំពេញ ${solarDateText}`]);
-            excelData.push(['', '', '', '', '', '', '', 'ប្រធានគណៈមេប្រយោគ']);
+            excelData.push([`បញ្ឈប់បញ្ជីត្រឹមចំនួន៖ ${toKhmerNum(totalCount)} នាក់ ស្រី ${toKhmerNum(femaleCount)} នាក់`, '', '', '', '', '', '', '']);
+            excelData.push([`ជាប់ជាស្ថាពរ ${hasScored ? toKhmerNum(passedCount) : '......'} នាក់ ក្នុងនោះស្រី ${hasScored ? toKhmerNum(femalePassedCount) : '......'} នាក់`, '', '', '', '', '', '', lunarDateText]);
+            excelData.push(['ចុះហត្ថលេខាដោយ....................................', '', '', '', '', '', '', `រាជធានីភ្នំពេញ ${solarDateText}`]);
+            excelData.push(['ផ្ទៀងផ្ទាត់ដោយ....................................', '', '', '', '', '', '', 'ប្រធានគណៈមេប្រយោគ']);
 
             const ws = XLSX.utils.aoa_to_sheet(excelData);
 
